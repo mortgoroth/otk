@@ -39,16 +39,14 @@ build_composer:
   stage: deploy
   tags:
     - docker
+  dependencies:
+    - build_composer
   script:
     - mkdir -p ~/.ssh && chmod 700 ~/.ssh
     - echo "$DEPLOYKEY" > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
     - ssh-keyscan -H $SERV >> ~/.ssh/known_hosts
-
     - ssh $USR@$SERV "sudo mkdir -p $REMOTE_PATH && sudo chown $USR:www-data $REMOTE_PATH"
-
-    # rsync с учетом собранного vendor
     - rsync -avz --delete --exclude='.git/' --exclude='node_modules/' --exclude='storage/*.key' src/ $USR@$SERV:$REMOTE_PATH/
-
     - >
       ssh $USR@$SERV "
         cd $REMOTE_PATH &&
