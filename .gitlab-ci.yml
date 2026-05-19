@@ -21,7 +21,7 @@ build_composer:
     key: "composer-${CI_COMMIT_REF_SLUG}"
     paths:
       - src/vendor/
-    script:
+  script:
     - cd src/
     - export http_proxy="$http_proxy"
     - export https_proxy="$http_proxy"
