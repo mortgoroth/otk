@@ -15,9 +15,7 @@ build_composer:
   <<: *only_master
   stage: install
   variables:
-    # Увеличиваем таймаут процесса до 10 минут
     COMPOSER_PROCESS_TIMEOUT: "600"
-    # Явно прокидываем переменные прокси, если они заданы в настройках GitLab
     HTTP_PROXY: "$http_proxy"
     HTTPS_PROXY: "$http_proxy"
     NO_PROXY: "gitlab.novotelecom.ru,127.0.0.1,localhost"
@@ -25,7 +23,7 @@ build_composer:
     key: "composer-${CI_COMMIT_REF_SLUG}"
     paths:
       - src/vendor/
-  image: composer:2  # Используем актуальный Composer
+  image: composer:2
   tags:
     - docker
   script:
@@ -48,7 +46,7 @@ build_composer:
     - docker
   dependencies:
     - build_composer
-  image: $CI_REGISTRY_IMAGE
+  image: composer:2
   script:
     - |
       echo "Checking artifacts..."
