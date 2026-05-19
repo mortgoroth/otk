@@ -3,16 +3,16 @@ variables:
   GIT_SUBMODULE_STRATEGY: recursive
   REMOTE_PATH: /usr/local/share/bot2
 
-.only_master: &only_master
+.only_main: &only_main
   only:
-    - master
+    - main
 
 stages:
   - install
   - deploy
 
 build_composer:
-  <<: *only_master
+  <<: *only_main
   stage: install
   image: composer:2
   tags:
@@ -35,7 +35,7 @@ build_composer:
     expire_in: 1 hour
 
 .deploy_template: &deploy_definition
-  <<: *only_master
+  <<: *only_main
   stage: deploy
   tags:
     - docker
