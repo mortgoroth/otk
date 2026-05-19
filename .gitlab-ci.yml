@@ -49,21 +49,45 @@ build_composer:
   dependencies:
     - build_composer
   script:
-    - mkdir -p ~/.ssh && chmod 700 ~/.ssh
-    - echo "$DEPLOYKEY" > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
+    - |
+      echo "Checking artifacts..."
+      if [ ! -d "src/vendor" ]; then
+        echo "ERROR: src/vendor not found! Composer build failed or artifacts expired."
+        exit 1
+      fi
+      echo "Artifacts are OK."
+
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo "$DEPLOYKEY" > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
     - ssh-keyscan -H $SERV >> ~/.ssh/known_hosts
-    - ssh $USR@$SERV "sudo mkdir -p $REMOTE_PATH && sudo chown $USR:www-data $REMOTE_PATH"
-    - rsync -avz --delete --exclude='.git/' --exclude='node_modules/' --exclude='storage/*.key' src/ $USR@$SERV:$REMOTE_PATH/
+
+    - chmod +x env.sh
+    - ./env.sh
+    - cd src/
+
+    - >
+      ssh $USR@$SERV "
+        sudo mkdir -p $REMOTE_PATH &&
+        sudo chown :www-data $REMOTE_PATH &&
+        sudo chmod g+rw $REMOTE_PATH -R
+      "
+
+    # 1. Синхронизируем файлы (уже с vendor и build)
+    - cd ..
+    - rsync -avz --delete --exclude='.git/' --exclude='src/storage/*.key' src/ $USR@$SERV:$REMOTE_PATH/
+
+    # 2. Настройка прав и кэша на сервере
     - >
       ssh $USR@$SERV "
         cd $REMOTE_PATH &&
         php artisan optimize:clear &&
+        php artisan vendor:publish --tag=otk-libs-config --force &&
         php artisan config:cache &&
         php artisan route:cache &&
-        php artisan migrate --force &&
-        php artisan queue:restart &&
-        sudo chown -R www-data:www-data storage bootstrap/cache &&
-        sudo supervisorctl restart all
+        sudo chown -R www-data:www-data public storage bootstrap/cache &&
+        sudo systemctl reload php8.4-fpm
       "
 
 deploy_server_01:
