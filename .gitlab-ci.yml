@@ -93,9 +93,9 @@ build_composer:
 deploy_server_01:
   <<: *deploy_definition
   variables:
-    SERV: tgzabbix-01.novotelecom.ru
+    SERV: tgzabbix-01.monitoring.novotelecom.ru
 
 deploy_server_02:
   <<: *deploy_definition
   variables:
-    SERV: tgzabbix-02.novotelecom.ru
+    SERV: tgzabbix-02.monitoring.novotelecom.ru
