@@ -14,13 +14,13 @@ stages:
 build_composer:
   <<: *only_master
   stage: install
-  image: composer:2
-  tags:
-    - docker
   cache:
     key: "composer-${CI_COMMIT_REF_SLUG}"
     paths:
       - src/vendor/
+  image: composer:2  # Используем актуальный Composer
+  tags:
+    - docker
   script:
     - cd src/
     - export http_proxy="$http_proxy"
