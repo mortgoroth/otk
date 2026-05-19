@@ -46,7 +46,7 @@ build_composer:
     - docker
   dependencies:
     - build_composer
-  image: composer:2
+  image: gitlab.novotelecom.ru:5050/otk/otk-service:latest
   script:
     - |
       echo "Checking artifacts..."
