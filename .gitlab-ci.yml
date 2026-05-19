@@ -14,6 +14,13 @@ stages:
 build_composer:
   <<: *only_master
   stage: install
+  variables:
+    # Увеличиваем таймаут процесса до 10 минут
+    COMPOSER_PROCESS_TIMEOUT: "600"
+    # Явно прокидываем переменные прокси, если они заданы в настройках GitLab
+    HTTP_PROXY: "$http_proxy"
+    HTTPS_PROXY: "$http_proxy"
+    NO_PROXY: "gitlab.novotelecom.ru,127.0.0.1,localhost"
   cache:
     key: "composer-${CI_COMMIT_REF_SLUG}"
     paths:
@@ -23,12 +30,12 @@ build_composer:
     - docker
   script:
     - cd src/
-    - export http_proxy="$http_proxy"
-    - export https_proxy="$http_proxy"
+#    - export http_proxy="$http_proxy"
+#    - export https_proxy="$http_proxy"
     - export COMPOSER_AUTH="{\"http-basic\":{\"gitlab.novotelecom.ru\":{\"username\":\"$LIBS_USER\",\"password\":\"$LIBS_PASS\"}}}"
     - /usr/bin/composer config repositories.libs '{"type":"vcs","url":"https://gitlab.novotelecom.ru/laravel-libs/libs.git","no-api":true}'
     - composer -V
-    - composer install --no-dev --optimize-autoloader --ignore-platform-reqs
+    - composer install --no-dev --optimize-autoloader --ignore-platform-reqs --no-interaction
   artifacts:
     paths:
       - src/vendor/
