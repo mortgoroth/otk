@@ -78,8 +78,9 @@
          * Подтверждение нажатия кнопки (чтобы кнопка не "зависала")
          */
         private function answerCallback (string $callbackQueryId):void {
+            $conf = config('telegram');
             \Illuminate\Support\Facades\Http::post(
-                "https://telegram.org".env('TELEGRAM_BOT_TOKEN')."/answerCallbackQuery", [
+                $conf['api_url'].$conf['otk_service_bot']['token']."/answerCallbackQuery", [
                     'callback_query_id' => $callbackQueryId]
             );
         }

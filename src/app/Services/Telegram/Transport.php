@@ -11,7 +11,8 @@
         protected string $url;
 
         public function __construct () {
-            $this->url = "https://telegram.org".env('TELEGRAM_BOT_TOKEN');
+            $conf = config('telegram');
+            $this->url = $conf['api_url'].$conf['otk_service_bot']['token'];
         }
 
         /**

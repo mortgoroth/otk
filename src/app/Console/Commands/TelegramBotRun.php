@@ -15,6 +15,7 @@
         public function handle (BotEngine $engine) {
             $offset = 0;
             $this->info("[".date('Y-m-d H:i:s')."] Бот запущен...");
+            $conf = conf('telegram');
 
             while (true) {
                 try {
@@ -23,7 +24,7 @@
                         ->getPdo();
 
                     $response = Http::timeout(35)
-                        ->get("https://telegram.org".env('TELEGRAM_BOT_TOKEN')."/getUpdates", [
+                        ->get($conf['api_url'].$conf['otk_service_bot']['token']."/getUpdates", [
                             'offset' => $offset, 'timeout' => 30
                         ]);
 
