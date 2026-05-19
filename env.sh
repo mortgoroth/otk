@@ -1,16 +1,15 @@
 #!/bin/sh
 
 echo "
-APP_NAME=OTK-SERVICE
+APP_NAME=OTK-SERVICE-BOT
 APP_ENV=local
 APP_KEY=\"$APP_KEY\"
 APP_DEBUG=false
-APP_URL=https://otk-rm-test.novotelecom.ru
 
-APP_LOG=/var/log/otk/vm/otk-rm/laravel.log
-APP_ERR_LOG=/var/log/otk/vm/otk-rm/laravel.error.log
-APP_DBG_LOG=/var/log/otk/vm/otk-rm/laravel.debug.log
-ASSEGNEE=hohlovav@ntk.novotelecom.ru
+APP_LOG=/var/log/otk/vm/bot2/laravel.log
+APP_ERR_LOG=/var/log/otk/vm/bot2/laravel.error.log
+APP_DBG_LOG=/var/log/otk/vm/bot2/laravel.debug.log
+ASSIGNEE=hohlovav@ntk.novotelecom.ru
 
 APP_LOCALE=en
 APP_FALLBACK_LOCALE=en
@@ -43,10 +42,10 @@ CACHE_STORE=file
 
 MEMCACHED_HOST=127.0.0.1
 
-REDIS_CLIENT=predis
-REDIS_HOST=\"otk-rm-test.novotelecom.ru\"
-REDIS_PASSWORD=\"$REDIS_PASS\"
-REDIS_PORT=6379
+#REDIS_CLIENT=predis
+#REDIS_HOST=\"otk-rm-test.novotelecom.ru\"
+#REDIS_PASSWORD=\"$REDIS_PASS\"
+#REDIS_PORT=6379
 
 MAIL_MAILER=log
 MAIL_SCHEME=null
@@ -65,9 +64,6 @@ AWS_USE_PATH_STYLE_ENDPOINT=false
 
 VITE_APP_NAME=\"\${APP_NAME}\"
 
-JIRA_URL=https://drug.ntk.novotelecom.ru/jira/browse/
-EMS_URL=http://api.net.novotelecom.ru/net-ems/ntpconfigurator
-OTK_API_URL_LOCAL=http://localhost:8080/api/v2
 OTK_API_URL=https://otk-rm-test.novotelecom.ru/api/v2
 TFTP_PORT=22
 
@@ -83,38 +79,19 @@ AUTH_COOKIE_NAME=auth_token
 
 AUTH_METHOD=ldap
 
-LDAP_SCHEMA=OpenLDAP
-LDAP_LOGGING=true
-LDAP_AUTO_CONNECT=true
-LDAP_CONNECTION=default
-LDAP_USE_SSL=true
-LDAP_USE_TLS=false
-LDAP_VERSION=3
-LDAP_TLS_INSECURE=true
-LDAP_FOLLOW_REFERRALS=false
-
-LDAP_HOSTS=a1d-01.novotelecom.ru,10.245.128.122
-LDAP_PORT=636
-
-LDAP_BASE_DN=dc=novotelecom,dc=ru
-LDAP_USERNAME=\"uid=$A4_USER,ou=robots,\${LDAP_BASE_DN}\"
-LDAP_PASSWORD=\"$A4_PASS\"
-
-LDAP_OFFICE_SCHEMA=ActiveDirectory
-LDAP_OFFICE_AUTO_CONNECT=false
-LDAP_OFFICE_USE_SSL=false
-LDAP_OFFICE_HOSTS=\"otk-haproxy.monitoring.novotelecom.ru\"
-LDAP_OFFICE_PORT=50100
-#LDAP_OFFICE_HOSTS=\"172.20.21.20 178.49.148.221\"
-#LDAP_OFFICE_PORT=389
-LDAP_OFFICE_BASE_DN=\"OU=Users,OU=Ntk,DC=ntk,DC=novotelecom,DC=ru\"
-LDAP_OFFICE_USERNAME=\"$OFFICE_LDAP_USER\"
-LDAP_OFFICE_PASSWORD=\"$OFFICE_LDAP_PASS\"
-LDAP_OFFICE_USER_ATTRIBUTE=samaccountName
-LDAP_OFFICE_USER_FILTER=\"(&(objectCategory=person)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))\"
-LDAP_OFFICE_ADM_GROUP=otkadm
-LDAP_OFFICE_ADM_PRIVILEGES=15
-LDAP_OFFICE_ATTRIBUTES=\"samaccountname name department distinguishedName mobile\"
+LDAP_SCHEMA=ActiveDirectory
+LDAP_AUTO_CONNECT=false
+LDAP_USE_SSL=false
+LDAP_HOSTS=\"otk-haproxy.monitoring.novotelecom.ru\"
+LDAP_PORT=50100
+LDAP_BASE_DN=\"OU=Users,OU=Ntk,DC=ntk,DC=novotelecom,DC=ru\"
+LDAP_USERNAME=\"$OFFICE_LDAP_USER\"
+LDAP_PASSWORD=\"$OFFICE_LDAP_PASS\"
+LDAP_USER_ATTRIBUTE=samaccountName
+LDAP_USER_FILTER=\"(&(objectCategory=person)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))\"
+LDAP_ADM_GROUP=otkadm
+LDAP_ADM_PRIVILEGES=15
+LDAP_ATTRIBUTES=\"samaccountname name department distinguishedName mobile\"
 
 
 L5_SWAGGER_VERSION=2.0
