@@ -1,147 +1,72 @@
-#variables:
-#  USR: root
-#  GIT_SUBMODULE_STRATEGY: recursive
-#
-#.only_master: &only_master
-#  only:
-#    - master
-#
-#stages:
-#  - install
-#  - build
-#  - deploy
-#
-## Глобальный кеш для ускорения установки зависимостей
-#cache:
-#  paths:
-#    - src/vendor/
-#    - src/node_modules/
-#
-## 1. Сборка PHP зависимостей (Composer)
-#build_composer:
-#  <<: *only_master
-#  stage: install
-#  cache:
-#    key: "composer-${CI_COMMIT_REF_SLUG}"
-#    paths:
-#      - src/vendor/
-#  image: composer:2  # Используем актуальный Composer
-#  tags:
-#    - docker
-#  script:
-#    - cd src/
-#    - export http_proxy="$http_proxy"
-#    - export https_proxy="$http_proxy"
-#    - export COMPOSER_AUTH="{\"http-basic\":{\"gitlab.novotelecom.ru\":{\"username\":\"$LIBS_USER\",\"password\":\"$LIBS_PASS\"}}}"
-#    - /usr/bin/composer config repositories.libs '{"type":"vcs","url":"https://gitlab.novotelecom.ru/laravel-libs/libs.git","no-api":true}'
-#    - composer -V
-#    - composer install --no-dev --optimize-autoloader --ignore-platform-reqs
-#  artifacts:
-#    paths:
-#      - src/vendor/
-#    expire_in: 1 hour
-#
-## 2. Сборка фронтенда (NPM / Vite)
-#build_npm:
-#  <<: *only_master
-#  stage: build
-#  image: node:26-alpine # Рекомендуется для новых версий Laravel
-#  tags:
-#    - docker
-#  dependencies:
-#    - build_composer
-#  variables:
-#    http_proxy: "$http_proxy"
-#    https_proxy: "$http_proxy"
-#    HTTP_PROXY: "$http_proxy"
-#    HTTPS_PROXY: "$http_proxy"
-#    NPM_CONFIG_CACHE: "$CI_PROJECT_DIR/src/.npm"
-#    # переменные для websocket (чЯтик и возможные другие свистоперделки)
-#    VITE_REVERB_APP_KEY: "$REVERB_APP_KEY"
-#    VITE_REVERB_HOST: "otk-rm-test.novotelecom.ru"
-#    VITE_REVERB_PORT: "443"
-#    VITE_REVERB_SCHEME: "https"
-#  cache:
-#    key: "npm-${CI_COMMIT_REF_SLUG}"
-#    paths:
-#      - src/.npm/
-#      - src/node_modules/
-#  script:
-#    - npm -v
-#    - node -v
-#    - cd src/
-#    - npm config set progress false
-#    - npm config set registry https://registry.npmjs.org
-#    - npm config set fetch-retry-maxtimeout 600000
-#    - npm config set fetch-retries 5
-#    - npm ci --no-audit --prefer-offline
-#    - npm run build
-#    - npm list
-#  artifacts:
-#    paths:
-#      - src/public/build/  # Результаты Vite для Laravel 12
-#    expire_in: 1 hour
-#
-#.deploy_template: &deploy_definition
-#  <<: *only_master
-#  tags:
-#    - docker
-#  stage: deploy
-#  dependencies:
-#    - build_composer
-#    - build_npm
-#  image: $CI_REGISTRY_IMAGE
-#  script:
-##    - ls -la src/vendor/
-##    - ls -la src/public/build/
-#    - |
-#      echo "Checking artifacts..."
-#      if [ ! -d "src/vendor" ]; then
-#        echo "ERROR: src/vendor not found! Composer build failed or artifacts expired."
-#        exit 1
-#      fi
-#      if [ ! -d "src/public/build" ]; then
-#        echo "ERROR: src/public/build not found! Vite build failed or artifacts expired."
-#        exit 1
-#      fi
-#      echo "Artifacts are OK."
-#    - mkdir -p ~/.ssh
-#    - chmod 700 ~/.ssh
-#    - echo "$DEPLOYKEY" > ~/.ssh/id_rsa
-#    - chmod 600 ~/.ssh/id_rsa
-#    - ssh-keyscan -H $SERV >> ~/.ssh/known_hosts
-#
-#    - chmod +x env.sh
-#    - ./env.sh
-#    - cd src/
-#
-#    - ssh $USR@$SERV 'sudo mkdir -p /usr/local/share/rm'
-#    - ssh $USR@$SERV 'sudo chown :www-data /usr/local/share/rm'
-#    - ssh $USR@$SERV 'sudo chmod g+rw /usr/local/share/rm -R'
-#
-#    # 1. Синхронизируем файлы (уже с vendor и build)
-#    - cd ..
-#    - rsync -avz --delete --exclude='.git/' --exclude='src/storage/*.key' src/ $USR@$SERV:/usr/local/share/rm/
-#
-#    # 2. Настройка прав и кэша на сервере
-#    - >
-#      ssh $USR@$SERV "
-#        cd /usr/local/share/rm &&
-#        php artisan optimize:clear &&
-#        php artisan vendor:publish --tag=otk-libs-config --force &&
-#        php artisan config:cache &&
-#        php artisan route:cache &&
-#        php artisan queue:restart &&
-#        (php artisan reverb:restart || true) &&
-#        sudo chown -R www-data:www-data public storage bootstrap/cache &&
-#        sudo systemctl reload php8.4-fpm
-#      "
-#deploy_server_01:
-#  <<: *deploy_definition
-#  variables:
-#    SERV: otk-rm-test-01.novotelecom.ru
-#
-#deploy_server_02:
-#  <<: *deploy_definition
-#  variables:
-#    SERV: otk-rm-test-02.novotelecom.ru
+variables:
+  USR: root
+  GIT_SUBMODULE_STRATEGY: recursive
+  REMOTE_PATH: /usr/local/share/bot2
+
+.only_master: &only_master
+  only:
+    - master
+
+stages:
+  - install
+  - deploy
+
+build_composer:
+  <<: *only_master
+  stage: install
+  image: composer:2
+  tags:
+    - docker
+  cache:
+    key: "composer-${CI_COMMIT_REF_SLUG}"
+    paths:
+      - src/vendor/
+    script:
+    - cd src/
+    - export http_proxy="$http_proxy"
+    - export https_proxy="$http_proxy"
+    - export COMPOSER_AUTH="{\"http-basic\":{\"gitlab.novotelecom.ru\":{\"username\":\"$LIBS_USER\",\"password\":\"$LIBS_PASS\"}}}"
+    - /usr/bin/composer config repositories.libs '{"type":"vcs","url":"https://gitlab.novotelecom.ru/laravel-libs/libs.git","no-api":true}'
+    - composer -V
+    - composer install --no-dev --optimize-autoloader --ignore-platform-reqs
+  artifacts:
+    paths:
+      - src/vendor/
+    expire_in: 1 hour
+
+.deploy_template: &deploy_definition
+  <<: *only_master
+  stage: deploy
+  tags:
+    - docker
+  script:
+    - mkdir -p ~/.ssh && chmod 700 ~/.ssh
+    - echo "$DEPLOYKEY" > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
+    - ssh-keyscan -H $SERV >> ~/.ssh/known_hosts
+
+    - ssh $USR@$SERV "sudo mkdir -p $REMOTE_PATH && sudo chown $USR:www-data $REMOTE_PATH"
+
+    # rsync с учетом собранного vendor
+    - rsync -avz --delete --exclude='.git/' --exclude='node_modules/' --exclude='storage/*.key' src/ $USR@$SERV:$REMOTE_PATH/
+
+    - >
+      ssh $USR@$SERV "
+        cd $REMOTE_PATH &&
+        php artisan optimize:clear &&
+        php artisan config:cache &&
+        php artisan route:cache &&
+        php artisan migrate --force &&
+        php artisan queue:restart &&
+        sudo chown -R www-data:www-data storage bootstrap/cache &&
+        sudo supervisorctl restart all
+      "
+
+deploy_server_01:
+  <<: *deploy_definition
+  variables:
+    SERV: tgzabbix-01.novotelecom.ru
+
+deploy_server_02:
+  <<: *deploy_definition
+  variables:
+    SERV: tgzabbix-02.novotelecom.ru
