@@ -48,6 +48,7 @@ build_composer:
     - docker
   dependencies:
     - build_composer
+  image: $CI_REGISTRY_IMAGE
   script:
     - |
       echo "Checking artifacts..."
@@ -63,8 +64,8 @@ build_composer:
     - chmod 600 ~/.ssh/id_rsa
     - ssh-keyscan -H $SERV >> ~/.ssh/known_hosts
 
-    - chmod +x env.sh
-    - ./env.sh
+#    - chmod +x env.sh
+#    - ./env.sh
     - cd src/
 
     - >
