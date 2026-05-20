@@ -51,15 +51,10 @@
                 Console::info("guest => $name::$uid::$text");
                 if (strtolower($text) === 'login') {
                     $this->auth->initAttempt($uid, $name);
-                    $this->bot->send($uid, "Ок! Введите ваш логин AD!", [], true);
+                    // Убрали пример логина
+                    $this->bot->send($uid, "Введите ваш AD логин:", [], true);
                 } else {
-                    // 1. Отправляем инлайновую кнопку
-                    // 2. Флагом true удаляем любую старую нижнюю клавиатуру
-                    $buttons = [[['text' => '🔐 Авторизоваться (LOGIN)', 'callback_data' => 'login']]];
-                    $this->bot->sendInline($uid, "⚠️ <b>Доступ ограничен.</b>\nДля работы с ботом необходимо войти в систему:", $buttons);
-
-                    // Посылаем пустую команду удаления клавиатуры, чтобы очистить низ экрана
-                    $this->bot->send($uid, "Используйте кнопку выше ⬆️", [], true);
+                    $this->bot->send($uid, "Для работы необходимо авторизоваться:", [['login']]);
                 }
                 return;
             }
@@ -69,10 +64,9 @@
                 Console::info("awaiting_login => $name::$uid::$text");
                 $res = $this->ldap->authenticate($uid, $text);
                 if ($res['success']) {
-                    $this->bot->send($uid, "Авторизация успешна! Добро пожаловать.", [['help', 'history', 'logout']]);
+                    $this->bot->send($uid, "✅ Авторизация успешна.", [['help', 'history', 'logout']]);
                 } else {
-                    // Если логин неверный — НЕ даем кнопку login обратно,
-                    // а просим ввести логин еще раз, оставляя поле ввода открытым
+                    // Убрали подсказку, просто просим повторить ввод
                     $this->bot->send($uid, "❌ Ошибка: " . $res['message'] . "\nПопробуйте ввести логин еще раз:", [], true);
                 }
                 return;
