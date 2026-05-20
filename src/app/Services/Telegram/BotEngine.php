@@ -2,8 +2,10 @@
 
     namespace App\Services\Telegram;
 
+    use App\Models\UserLdap;
     use App\Services\Auth\LdapAuthService;
     use App\Services\Ldap\LdapService;
+    use Illuminate\Support\Facades\Http;
 
     class BotEngine {
         public function __construct (
@@ -46,20 +48,22 @@
 
             // --- СОСТОЯНИЕ: ГОСТЬ ---
             if ($status === 'guest') {
+                Console::info("guest => $name::$uid::$text");
                 if (strtolower($text) === 'login') {
                     $this->auth->initAttempt($uid, $name);
-                    // Убираем кнопку login, открывая чистое поле для ввода текста
-                    $this->bot->send($uid, "Ок! Введите ваш логин AD:", [], true);
+
+                    // ПРИНУДИТЕЛЬНО убираем кнопку, чтобы открылись буквы для ввода логина
+                    $this->bot->send($uid, "Введите ваш AD логин:", [], true);
                 } else {
-                    // ЖЕСТКО перекрываем ввод кнопкой Login
-                    // Мы передаем клавиатуру и НЕ ставим флаг remove_keyboard
-                    $this->bot->send($uid, "Для работы необходимо авторизоваться:", [['login']]);
+                    // Если он пишет что-то другое — ГАСИМ ввод кнопкой
+                    $this->bot->send($uid, "⚠️ Для доступа нажмите кнопку Login:", [['login']]);
                 }
                 return;
             }
 
             // --- СОСТОЯНИЕ: ОЖИДАНИЕ ЛОГИНА ---
             if ($status === 'awaiting_login') {
+                Console::info("awaiting_login => $name::$uid::$text");
                 $res = $this->ldap->authenticate($uid, $text);
                 if ($res['success']) {
                     $this->bot->send($uid, "Авторизация успешна! Добро пожаловать.", [['help', 'history', 'logout']]);
@@ -73,8 +77,9 @@
 
 // --- СОСТОЯНИЕ: АВТОРИЗОВАН ---
             if ($status === 'authorized') {
+                Console::info("authorized => $name::$uid::$text");
                 if (strtolower($text) === 'logout') {
-                    \App\Models\UserLdap::where('uid', $uid)
+                    UserLdap::where('uid', $uid)
                         ->update([
                             'authorized' => false,
                             'attempt' => false
@@ -84,7 +89,7 @@
                 }
 
                 // Отдаем команду в диспетчер
-                $this->dispatcher->dispatch(\App\Models\UserLdap::find($uid), $text, $this);
+                $this->dispatcher->dispatch(UserLdap::find($uid), $text, $this);
             }
         }
 
@@ -93,9 +98,9 @@
          */
         private function answerCallback (string $callbackQueryId):void {
             $conf = config('telegram');
-            \Illuminate\Support\Facades\Http::post(
-                "{$conf['api_url']}/bot{$conf['otk_service_bot']['token']}/answerCallbackQuery", [
-                    'callback_query_id' => $callbackQueryId]
+            Http::post(
+                "{$conf['api_url']}/bot{$conf['otk_service_bot']['token']}/answerCallbackQuery",
+                ['callback_query_id' => $callbackQueryId]
             );
         }
     }

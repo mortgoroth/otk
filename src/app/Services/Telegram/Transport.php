@@ -32,7 +32,7 @@
             } elseif (!empty($keyboard)) {
                 $params['reply_markup'] = [
                     'keyboard' => $keyboard,
-                    'resize_keyboard' => true,
+                    'resize_keyboard' => false,
                     'one_time_keyboard' => false, // Кнопка висит мертвым грузом, пока не залогинится
                     'input_field_placeholder' => 'Сначала нажмите кнопку Login ⬇️' // Текст ПОВЕРХ ввода
                 ];

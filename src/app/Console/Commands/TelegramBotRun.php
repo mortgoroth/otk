@@ -34,6 +34,7 @@
                             $offset = $update['update_id'] + 1;
 
                             try {
+                                $this->info("[".date('Y-m-d H:i:s')."]".json_encode($update, JSON_UNESCAPED_UNICODE));
                                 $engine->handle($update);
                             } catch (Exception $e) {
                                 $this->error("Ошибка обработки Update ID {$update['update_id']}: ".$e->getMessage());

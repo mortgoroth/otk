@@ -4,10 +4,10 @@
 
     use App\Contracts\LdapProvider;
     use App\Models\UserLdap;
+    use App\Services\Telegram\Console;
     use App\Services\Telegram\DebugController;
 
     class LdapService {
-        // конфиг из старого LdapController
         public const ACCESSED_DEPARTMENTS = [
             'Управление Эксплуатации'                    => ['Подрядчики'],
             'Управление Технической Поддержки Абонентов' => ['Подрядчики'],
@@ -26,11 +26,16 @@
          */
         public function authenticate (int $uid, string $username):array {
             // 1. Поиск в LDAP (AD или OpenLDAP)
+            Console::info("LDAP <= $username");
             $ldapUser = $this->provider->findUser($username);
+            Console::info("LDAP search: $ldapUser");
 
             if (!$ldapUser) {
                 DebugController::write("Пользователь $username не найден в LDAP", 'LDAP_AUTH');
-                return ['success' => false, 'message' => "Пользователь $username не найден в LDAP"];
+                return [
+                    'success' => false,
+                    'message' => "Пользователь $username не найден в LDAP"
+                ];
             }
 
             // 2. Проверка доступа по департаменту и подразделению
@@ -45,6 +50,7 @@
             // 3. Обновление записи в БД
             $user = UserLdap::where('uid', $uid)
                 ->first();
+            Console::info("LDAP => ".json_encode($user, JSON_UNESCAPED_UNICODE));
 
             $user->update([
                 'username'       => $ldapUser['username'],

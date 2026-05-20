@@ -127,7 +127,7 @@
             'alert_off' => \App\Telegram\Commands\AlertManageHandler::class,
         ];
 
-        public function dispatch (UserLdap $user, string $text, $engine):void {
+        public function dispatch (UserLdap $user, string $text, BotEngine $engine):void {
             // Парсим команду и параметры (аналог setCmdParams)
             $parts = explode(' ', $text);
             $cmdName = str_replace('/', '', mb_strtolower(current($parts)));
