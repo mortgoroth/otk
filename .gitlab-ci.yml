@@ -88,8 +88,13 @@ build_composer:
         $PHP artisan route:cache &&
         sudo chown -R www-data:www-data public storage bootstrap/cache &&
         sudo systemctl reload php8.4-fpm &&
-        sudo supervisorctl update &&
-        sudo supervisorctl restart otk-service-bot2 || true
+        sudo supervisorctl update &&        
+        if sudo supervisorctl status otk-service-bot2 | grep -q 'RUNNING'; then
+          echo 'Node is MASTER, restarting bot...';
+          sudo supervisorctl restart otk-service-bot2;
+        else
+          echo 'Node is BACKUP, skipping bot restart.';
+        fi
       "
 
 deploy_server_01:
