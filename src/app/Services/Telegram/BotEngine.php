@@ -7,7 +7,10 @@
 
     class BotEngine {
         public function __construct (
-            protected LdapAuthService $auth, protected LdapService $ldap, protected Transport $bot, protected CommandDispatcher $dispatcher
+            protected LdapAuthService $auth,
+            protected LdapService $ldap,
+            protected Transport $bot,
+            protected CommandDispatcher $dispatcher
         ) {
         }
 
@@ -23,53 +26,60 @@
             $text = '';
             $name = '';
 
-            // 1. ПАРСИНГ: Обычное сообщение или нажатие кнопки?
+            // 1. ПАРСИНГ
             if (isset($update['message'])) {
                 $uid = $update['message']['chat']['id'];
                 $text = trim($update['message']['text'] ?? '');
                 $name = $update['message']['from']['first_name'] ?? 'User';
             } elseif (isset($update['callback_query'])) {
                 $uid = $update['callback_query']['message']['chat']['id'];
-                // Берем данные из callback_data (там лежит текст команды из истории)
                 $text = trim($update['callback_query']['data'] ?? '');
                 $name = $update['callback_query']['from']['first_name'] ?? 'User';
-
-                // Отправляем уведомление в Telegram, что "нажатие принято" (убирает часики с кнопки)
                 $this->answerCallback($update['callback_query']['id']);
             }
 
-            if (!$uid)
-                return;
+            if (!$uid) return;
 
-            // 2. ЛОГИКА АВТОРИЗАЦИИ (из требований)
+
+            // 2. ЛОГИКА АВТОРИЗАЦИИ
             $status = $this->auth->getStatus($uid);
 
+            // --- СОСТОЯНИЕ: ГОСТЬ ---
             if ($status === 'guest') {
                 if (strtolower($text) === 'login') {
                     $this->auth->initAttempt($uid, $name);
-                    $this->bot->send($uid, "Введите ваш AD логин:", [], true);
+                    // Убираем кнопку login, открывая чистое поле для ввода текста
+                    $this->bot->send($uid, "Ок! Введите ваш логин AD:", [], true);
                 } else {
-                    $this->bot->send($uid, "Нажмите кнопку для входа:", [['login']]);
+                    // ЖЕСТКО перекрываем ввод кнопкой Login
+                    // Мы передаем клавиатуру и НЕ ставим флаг remove_keyboard
+                    $this->bot->send($uid, "Для работы необходимо авторизоваться:", [['login']]);
                 }
                 return;
             }
 
+            // --- СОСТОЯНИЕ: ОЖИДАНИЕ ЛОГИНА ---
             if ($status === 'awaiting_login') {
                 $res = $this->ldap->authenticate($uid, $text);
                 if ($res['success']) {
-                    $this->bot->send($uid, "Ок, вошли!", [['help', 'history', 'logout']]);
+                    $this->bot->send($uid, "Авторизация успешна! Добро пожаловать.", [['help', 'history', 'logout']]);
                 } else {
-                    $this->bot->send($uid, "Ошибка: ".$res['message'], [['login']]);
+                    // Если логин неверный — НЕ даем кнопку login обратно,
+                    // а просим ввести логин еще раз, оставляя поле ввода открытым
+                    $this->bot->send($uid, "❌ Ошибка: " . $res['message'] . "\nПопробуйте ввести логин еще раз:", [], true);
                 }
                 return;
             }
 
-            // 3. ДИСПЕТЧЕРИЗАЦИЯ КОМАНД
+// --- СОСТОЯНИЕ: АВТОРИЗОВАН ---
             if ($status === 'authorized') {
                 if (strtolower($text) === 'logout') {
                     \App\Models\UserLdap::where('uid', $uid)
-                        ->update(['authorized' => false]);
-                    $this->bot->send($uid, "Вы вышли.", [['login']]);
+                        ->update([
+                            'authorized' => false,
+                            'attempt' => false
+                        ]);
+                    $this->bot->send($uid, "Вы вышли из системы.", [['login']]);
                     return;
                 }
 

@@ -20,14 +20,21 @@
          */
         public function send (int $chatId, string $text, array $keyboard = [], bool $removeKeyboard = false):int {
             $params = [
-                'chat_id' => $chatId, 'parse_mode' => 'HTML',
+                'chat_id' => $chatId,
+                'text' => $text,
+                'parse_mode' => 'HTML',
             ];
 
             if ($removeKeyboard) {
-                $params['reply_markup'] = ['remove_keyboard' => true];
+                $params['reply_markup'] = [
+                    'remove_keyboard' => true
+                ];
             } elseif (!empty($keyboard)) {
                 $params['reply_markup'] = [
-                    'keyboard' => $keyboard, 'resize_keyboard' => true, 'one_time_keyboard' => false
+                    'keyboard' => $keyboard,
+                    'resize_keyboard' => true,
+                    'one_time_keyboard' => false, // Кнопка висит мертвым грузом, пока не залогинится
+                    'input_field_placeholder' => 'Сначала нажмите кнопку Login ⬇️' // Текст ПОВЕРХ ввода
                 ];
             }
 
