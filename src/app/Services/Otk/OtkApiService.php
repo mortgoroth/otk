@@ -16,7 +16,7 @@
 
         public function request (string $uri, array $params = [], bool $post = false):array {
             $url = $this->baseUrl.$uri;
-            Console::warn("REQUEST URI: $uri");
+            Console::warn("REQUEST URL: $url");
 
             try {
                 $request = Http::timeout(600)
@@ -25,6 +25,7 @@
                 $response = $post
                     ? $request->post($url, $params)
                     : $request->get($url, $params);
+                Console::warn("REQUEST RESPONSE: ".json_encode($response, JSON_UNESCAPED_UNICODE));
 
                 if ($response->failed()) {
                     DebugController::write($response->body(), "OTK_API_ERROR: $uri");
