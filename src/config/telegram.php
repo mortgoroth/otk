@@ -8,4 +8,6 @@
         'test_bot' => [
             'token'   => env('TELEGRAM_TEST_BOT_TOKEN'),
         ],
+        'debug' => env('TELEGRAM_DEBUG', false),
+        'debug_uids' => explode(',', env('TELEGRAM_DEBUG_UIDS', '')),
     ];

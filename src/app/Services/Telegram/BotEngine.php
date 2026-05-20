@@ -42,6 +42,7 @@
 
             if (!$uid) return;
 
+            request()->merge(['current_tg_uid' => $uid]); // для логгирования через дебаг
 
             // 2. ЛОГИКА АВТОРИЗАЦИИ
             $status = $this->auth->getStatus($uid);
@@ -72,7 +73,7 @@
                 return;
             }
 
-// --- СОСТОЯНИЕ: АВТОРИЗОВАН ---
+            // --- СОСТОЯНИЕ: АВТОРИЗОВАН ---
             if ($status === 'authorized') {
                 Console::info("authorized => $name::$uid::$text");
                 if (strtolower($text) === 'logout') {

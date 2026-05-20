@@ -7,9 +7,6 @@
     class Console {
         private static ?ConsoleOutput $output = null;
 
-        /**
-         * Инициализация вывода (Singleton)
-         */
         protected static function output ():ConsoleOutput {
             if (self::$output === null) {
                 self::$output = new ConsoleOutput();
@@ -18,38 +15,42 @@
         }
 
         /**
-         * Зеленый текст (успех/инфо)
+         * Проверка: нужно ли выводить лог в консоль
          */
+        private static function shouldLog(): bool {
+            $isDebugEnabled = config('services.telegram.debug', false);
+            $allowedUids = config('services.telegram.debug_uids', []);
+            $currentUid = request()->get('current_tg_uid');
+
+            // 1. Если дебаг включен — логируем вообще всё и всех
+            if ($isDebugEnabled) {
+                return true;
+            }
+
+            // 2. Если дебаг выключен, проверяем: входит ли юзер в список избранных
+            // Если список пуст или UID не совпал — молчим
+            if (!empty($allowedUids) && in_array($currentUid, $allowedUids)) {
+                return true;
+            }
+
+            return false;
+        }
+
         public static function info (string $message):void {
+            if (!self::shouldLog()) return;
             $time = date('Y-m-d H:i:s');
-            self::output()
-                ->writeln("<info>[$time]</info> $message");
+            self::output()->writeln("<info>[$time]</info> $message");
         }
 
-        /**
-         * Красный текст (ошибки)
-         */
         public static function error (string $message):void {
+            // Ошибки пишем всегда, даже если дебаг выключен,
             $time = date('Y-m-d H:i:s');
-            self::output()
-                ->writeln("<error>[$time]</error> $message");
+            self::output()->writeln("<error>[$time]</error> $message");
         }
 
-        /**
-         * Желтый текст (предупреждения)
-         */
         public static function warn (string $message):void {
+            if (!self::shouldLog()) return;
             $time = date('Y-m-d H:i:s');
-            self::output()
-                ->writeln("<comment>[$time]</comment> $message");
-        }
-
-        /**
-         * Обычный текст (дебаг)
-         */
-        public static function line (string $message):void {
-            $time = date('Y-m-d H:i:s');
-            self::output()
-                ->writeln("[$time] $message");
+            self::output()->writeln("<comment>[$time]</comment> $message");
         }
     }
