@@ -80,7 +80,7 @@
         private function answerCallback (string $callbackQueryId):void {
             $conf = config('telegram');
             \Illuminate\Support\Facades\Http::post(
-                $conf['api_url'].$conf['otk_service_bot']['token']."/answerCallbackQuery", [
+                "{$conf['api_url']}/{$conf['otk_service_bot']['token']}/answerCallbackQuery", [
                     'callback_query_id' => $callbackQueryId]
             );
         }
