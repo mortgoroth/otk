@@ -24,7 +24,7 @@
                         ->getPdo();
 
                     $response = Http::timeout(35)
-                        ->get("{$conf['api_url']}/{$conf['otk_service_bot']['token']}/getUpdates", [
+                        ->get("{$conf['api_url']}/bot{$conf['otk_service_bot']['token']}/getUpdates", [
                             'offset' => $offset,
                             'timeout' => 30
                         ]);

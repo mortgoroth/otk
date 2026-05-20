@@ -12,7 +12,7 @@
 
         public function __construct () {
             $conf = config('telegram');
-            $this->url = "{$conf['api_url']}/{$conf['otk_service_bot']['token']}";
+            $this->url = "{$conf['api_url']}/bot{$conf['otk_service_bot']['token']}";
         }
 
         /**
