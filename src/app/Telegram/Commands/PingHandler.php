@@ -4,6 +4,7 @@
 
     use App\Models\UserLdap;
     use App\Services\Otk\OtkApiService;
+    use App\Services\Telegram\Console;
 
     class PingHandler extends BaseHandler {
         public bool $needToStore = true;
@@ -37,6 +38,7 @@
                 $this->startReply($user->uid, "🔍 Ищу <code>$swnm</code>...");
 
                 $res = $this->otk->request("/tg/$swnm/ping");
+                Console::warn("PING RESPONSE: ".json_encode($res, JSON_UNESCAPED_UNICODE));
 
                 if (($res['error']['id'] ?? -1) === 0) {
                     $this->appendReply($user->uid, "🔎 Найден, пингую $swnm...");

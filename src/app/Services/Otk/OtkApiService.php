@@ -39,7 +39,8 @@
                 Console::warn("REQUEST DATA: ".json_encode($data, JSON_UNESCAPED_UNICODE));
 
                 // В старом коде результат лежал в ключе 'result'
-                return $data['result'] ?? $data;
+//                return $data['result'] ?? $data;
+                return $data;
 
             } catch (\Illuminate\Http\Client\ConnectionException $e) {
                 // Ловим именно таймаут

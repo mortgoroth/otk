@@ -51,7 +51,7 @@
                 Console::info("guest => $name::$uid::$text");
                 if (strtolower($text) === 'login') {
                     $this->auth->initAttempt($uid, $name);
-                    $this->bot->send($uid, "Ок! Введите ваш логин AD (например: hohlovav):", [], true);
+                    $this->bot->send($uid, "Ок! Введите ваш логин AD!", [], true);
                 } else {
                     // 1. Отправляем инлайновую кнопку
                     // 2. Флагом true удаляем любую старую нижнюю клавиатуру
