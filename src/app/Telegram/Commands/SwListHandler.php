@@ -3,7 +3,7 @@
     namespace App\Telegram\Commands;
 
     use App\Models\UserLdap;
-    use Otk\Libs\Facades\DB\Topo;
+    use Otk\Libs\Services\Queries\TopoDb;
 
     class SwListHandler extends BaseHandler {
         public function handle (UserLdap $user, array $params):void {
@@ -37,7 +37,7 @@
                 return;
             }
 
-            $topoTerms = Topo::allById();
+            $topoTerms = TopoDb::allById();
 
             foreach ($swlist['result']['data'] as $address => $loc_data) {
                 foreach ($loc_data as $house => $ad_data) {

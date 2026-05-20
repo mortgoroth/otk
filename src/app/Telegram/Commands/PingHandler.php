@@ -40,7 +40,7 @@
                     $result = $res['result'];
                     $status = ($result['avail'] ?? false) ? '✅ Доступен' : '❌ Недоступен';
 
-                    $reply = "<b>{$result['swnm']}</b> ({$result['swip']})\n"."Модель по БД: {$result['type']}\n"."Адрес: {$result['addr']}\n"."Статус: $status\n";
+                    $reply = "<b>{$result['swnm']}</b> ({$result['swip']})\n"."Модель по БД: <code>{$result['type']}</code>>\n"."Адрес: <code>{$result['addr']}</code>\n"."Статус: $status\n";
 
                     if (!empty($result['nodeSwitches'])) {
                         $reply .= "\n🏢 <b>Коммутаторы в узле:</b>\n";
