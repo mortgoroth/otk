@@ -2538,11 +2538,11 @@
         },
         {
             "name": "otk/libs",
-            "version": "1.8.17.38",
+            "version": "1.8.17.39",
             "source": {
                 "type": "git",
                 "url": "https://gitlab.novotelecom.ru/laravel-libs/libs.git",
-                "reference": "e1f4b9e6937fa16773c50e221e52282ac9306ef3"
+                "reference": "de9e7d729129ce1cdccdc945a38ed611475932bc"
             },
             "require": {
                 "ext-bcmath": "*",
@@ -2586,7 +2586,7 @@
                 }
             ],
             "description": "Библиотеки для проектов Laravel",
-            "time": "2026-05-07T02:42:00+00:00"
+            "time": "2026-05-20T01:15:43+00:00"
         },
         {
             "name": "phpoption/phpoption",
