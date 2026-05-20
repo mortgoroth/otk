@@ -135,13 +135,13 @@
 
             // 1. Проверка на вывод помощи по команде: "команда ?"
             if (isset($params[0]) && $params[0] === '?') {
-                $engine->bot->send($user->uid, "Справка по команде $cmdName..."); // Тут вызов help для команды
+                $engine->getBot()->send($user->uid, "Справка по команде $cmdName..."); // Тут вызов help для команды
                 return;
             }
 
             // 2. Проверка прав (логика ACCESSED_DEPARTMENTS)
             if (!$this->checkAccess($user, $cmdName)) {
-                $engine->bot->send($user->uid, "У вас нет прав на выполнение команды $cmdName!");
+                $engine->getBot()->send($user->uid, "У вас нет прав на выполнение команды $cmdName!");
                 return;
             }
 
@@ -155,10 +155,10 @@
                     $handler->handle($user, $params);
                     // Логирование выполняется внутри BaseHandler или здесь после выполнения
                 } catch (\Exception $e) {
-                    $engine->bot->send($user->uid, "Ошибка: ".$e->getMessage());
+                    $engine->getBot()->send($user->uid, "Ошибка: ".$e->getMessage());
                 }
             } else {
-                $engine->bot->send($user->uid, "Сам такой! Команда не найдена.");
+                $engine->getBot()->send($user->uid, "Сам такой! Команда не найдена.");
             }
         }
 

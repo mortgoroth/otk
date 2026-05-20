@@ -11,6 +11,10 @@
         ) {
         }
 
+        public function getBot(): Transport {
+            return $this->bot;
+        }
+
         public function handle (array $update):void {
             set_time_limit(0); // Снимаем ограничение времени выполнения скрипта
             ini_set('default_socket_timeout', 600); // Таймаут для сокетов
