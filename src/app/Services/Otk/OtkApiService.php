@@ -2,6 +2,7 @@
 
     namespace App\Services\Otk;
 
+    use App\Services\Telegram\Console;
     use Illuminate\Support\Facades\Http;
     use App\Services\Telegram\DebugController;
 
@@ -15,6 +16,7 @@
 
         public function request (string $uri, array $params = [], bool $post = false):array {
             $url = $this->baseUrl.$uri;
+            Console::warn("REQUEST URI: $uri");
 
             try {
                 $request = Http::timeout(600)
@@ -33,6 +35,7 @@
                 }
 
                 $data = $response->json();
+                Console::warn("REQUEST DATA: ".json_encode($data, JSON_UNESCAPED_UNICODE));
 
                 // В старом коде результат лежал в ключе 'result'
                 return $data['result'] ?? $data;
