@@ -4,6 +4,7 @@
 
     use App\Contracts\LdapProvider;
     use App\Services\Telegram\Console;
+    use Exception;
     use LdapRecord\Container;
     use LdapRecord\Models\ActiveDirectory\User;
 
@@ -46,7 +47,7 @@
                     'mobile'         => $phones
                 ];
 
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 Console::error("Ошибка связи с LDAP: " . $e->getMessage());
                 return null;
             }

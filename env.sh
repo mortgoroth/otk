@@ -83,19 +83,19 @@ TELEGRAM_PROXY=\"$TELEGRAM_PROXY\"
 
 AUTH_METHOD=ldap
 
-LDAP_SCHEMA=ActiveDirectory
-LDAP_AUTO_CONNECT=false
-LDAP_USE_SSL=false
-LDAP_HOSTS=\"otk-haproxy.monitoring.novotelecom.ru\"
-LDAP_PORT=50100
-LDAP_BASE_DN=\"OU=Users,OU=Ntk,DC=ntk,DC=novotelecom,DC=ru\"
-LDAP_USERNAME=\"$OFFICE_LDAP_USER\"
-LDAP_PASSWORD=\"$OFFICE_LDAP_PASS\"
-LDAP_USER_ATTRIBUTE=samaccountName
-LDAP_USER_FILTER=\"(&(objectCategory=person)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))\"
-LDAP_ADM_GROUP=otkadm
-LDAP_ADM_PRIVILEGES=15
-LDAP_ATTRIBUTES=\"samaccountname name department distinguishedName mobile\"
+LDAP_OFFICE_SCHEMA=ActiveDirectory
+LDAP_OFFICE_AUTO_CONNECT=false
+LDAP_OFFICE_USE_SSL=false
+LDAP_OFFICE_HOSTS=\"otk-haproxy.monitoring.novotelecom.ru\"
+LDAP_OFFICE_PORT=50100
+LDAP_OFFICE_BASE_DN=\"OU=Users,OU=Ntk,DC=ntk,DC=novotelecom,DC=ru\"
+LDAP_OFFICE_USERNAME=\"$OFFICE_LDAP_USER\"
+LDAP_OFFICE_PASSWORD=\"$OFFICE_LDAP_PASS\"
+LDAP_OFFICE_USER_ATTRIBUTE=samaccountName
+LDAP_OFFICE_USER_FILTER=\"(&(objectCategory=person)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))\"
+LDAP_OFFICE_ADM_GROUP=otkadm
+LDAP_OFFICE_ADM_PRIVILEGES=15
+LDAP_OFFICE_ATTRIBUTES=\"samaccountname name department distinguishedName mobile\"
 
 
 L5_SWAGGER_VERSION=2.0
