@@ -87,8 +87,9 @@ build_composer:
         $PHP artisan config:cache &&
         $PHP artisan route:cache &&
         sudo chown -R www-data:www-data public storage bootstrap/cache &&
-        sudo systemctl reload php8.4-fpm
-        sudo supervisorctl restart otk-service-bot2
+        sudo systemctl reload php8.4-fpm &&
+        sudo supervisorctl update &&
+        sudo supervisorctl restart otk-service-bot2 || true
       "
 
 deploy_server_01:
