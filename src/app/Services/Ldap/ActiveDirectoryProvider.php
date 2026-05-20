@@ -14,8 +14,8 @@
                 $query = User::query()
                     ->where('objectCategory', '=', 'person')
                     // Убираем диспетчеров (whereNotContains 'samaccountname')
-                    ->where('samaccountname', 'not contains', 'disp_')
-                    ->where('samaccountname', 'not contains', 'disp-')
+                    ->whereNotContains('samaccountname', 'disp_')
+                    ->whereNotContains('samaccountname', 'disp-')
                     // Ищем конкретного юзера
                     ->where('samaccountname', '=', $username);
 
