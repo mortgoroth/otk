@@ -4,22 +4,32 @@
 
     use App\Models\UserLdap;
     use App\Models\Log;
+    use App\Services\Telegram\Console;
 
     class HistoryHandler extends BaseHandler {
         public function handle (UserLdap $user, array $params):void {
             $commands = Log::getLastCommands($user->uid);
 
             if (empty($commands)) {
-                $this->bot->send($user->uid, "История пуста.");
+                Console::warn("History is empty for user {$user->username}");
+                $this->bot->send($user->uid, "📜 Ваша история команд пока пуста.");
                 return;
             }
 
-            // Формируем кнопки: каждая команда в отдельном ряду
             $buttons = [];
-            foreach ($commands as $cmd) {
-                $buttons[] = [['text' => $cmd, 'callback_data' => $cmd]];
+            foreach ($commands as $cmdText) {
+                // Важно: в кнопке должен быть массив [кнопка] для создания ряда
+                $buttons[] = [
+                    ['text' => $cmdText, 'callback_data' => $cmdText]
+                ];
             }
 
-            $this->bot->sendInline($user->uid, "Последние 5 команд:", $buttons);
+            Console::info("Sending history inline keyboard to {$user->username}");
+
+            $this->bot->sendInline(
+                $user->uid,
+                "📋 <b>Последние 5 команд:</b>",
+                $buttons
+            );
         }
     }
