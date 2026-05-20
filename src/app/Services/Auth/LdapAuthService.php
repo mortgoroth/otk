@@ -3,6 +3,7 @@
     namespace App\Services\Auth;
 
     use App\Models\UserLdap;
+    use App\Services\Telegram\Console;
 
     class LdapAuthService {
         /**
@@ -10,6 +11,7 @@
          */
         public function getStatus (int $uid):string {
             $user = UserLdap::find($uid);
+            Console::info("LdapAuthService::getStatus user search result => ".json_encode($user, JSON_UNESCAPED_UNICODE));
 
             // 1. Юзера нет в базе или он вообще не начинал вход
             if (!$user || (!$user->authorized && !$user->attempt)) {
@@ -26,6 +28,7 @@
                 }
                 return 'authorized';
             }
+            Console::info("LdapAuthService::getStatus => ".json_encode($user, JSON_UNESCAPED_UNICODE));
 
             // 3. Юзер нажал кнопку login, но еще не прислал текст логина
             if ($user->attempt && !$user->authorized) {
@@ -39,7 +42,10 @@
          * Активация режима ввода логина (по кнопке "login")
          */
         public function initAttempt (int $uid, string $tgName):void {
-            UserLdap::updateOrCreate(['uid' => $uid], [
+            Console::info("LdapAuthService::initAttempt => $uid :: $tgName");
+            UserLdap::updateOrCreate(
+                ['uid' => $uid],
+                [
                     'tg_full_name' => $tgName,
                     'attempt' => true,
                     'authorized' => false

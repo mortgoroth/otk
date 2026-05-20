@@ -28,7 +28,7 @@
             // 1. Поиск в LDAP (AD или OpenLDAP)
             Console::info("LDAP <= $username");
             $ldapUser = $this->provider->findUser($username);
-            Console::info("LDAP search: $ldapUser");
+            Console::info("LDAP search: ".json_encode($ldapUser, JSON_UNESCAPED_UNICODE));
 
             if (!$ldapUser) {
                 DebugController::write("Пользователь $username не найден в LDAP", 'LDAP_AUTH');
