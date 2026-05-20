@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'default' => env('LDAP_CONNECTION', 'default'),
+    'default' => env('LDAP_CONNECTION', 'office'),
 
     /*
     |--------------------------------------------------------------------------
@@ -28,16 +28,15 @@ return [
 
     'connections' => [
 
-        'default' => [
-            'hosts'    => explode(',', env('LDAP_HOSTS') ?? ''),
-            'username' => env('LDAP_USERNAME', 'username'),
-            'password' => env('LDAP_PASSWORD', 'secret'),
-            'port'     => env('LDAP_PORT', 389),
-            'base_dn'  => env('LDAP_BASE_DN', 'dc=local,dc=com'),
-            'timeout'  => env('LDAP_TIMEOUT', 5),
-            'use_ssl'  => env('LDAP_USE_SSL', false),
-            'use_tls'  => env('LDAP_USE_TLS', false),
-            'use_sasl' => env('LDAP_SASL', false),
+        'office' => [
+            'hosts'        => explode(' ', env('LDAP_HOSTS', '')),
+            'username'     => env('LDAP_USERNAME', 'username'),
+            'password'     => env('LDAP_PASSWORD', 'secret'),
+            'port'         => env('LDAP_PORT', 389),
+            'base_dn'      => env('LDAP_BASE_DN', ''),
+            'timeout'      => env('LDAP_TIMEOUT', 5),
+            'use_ssl'      => env('LDAP_USE_SSL', false),
+            'use_tls'      => env('LDAP_USE_TLS', false),
             'sasl_options' => [],
         ],
     ],
