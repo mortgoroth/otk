@@ -46,7 +46,7 @@
             if ($pod)
                 $requestParams['pod'] = $pod;
 
-            $res = $this->otk->request('/tg/abons', $requestParams);
+            $res = $this->otk->request('/tg/abons', $requestParams, true);
 
             // 4. Обработка результата
             if (($res['error']['id'] ?? -1) === 0) {

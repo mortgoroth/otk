@@ -20,9 +20,14 @@
 
             $this->startReply($user->uid, "🔎 Ищу узлы по запросу: <code>$location</code>");
 
-            $res = $this->otk->request('/tg/short', [
-                'location' => $location, 'strict' => false
-            ]);
+            $res = $this->otk->request(
+                '/tg/short',
+                [
+                    'location' => $location,
+                    'strict' => false
+                ],
+                true
+            );
 
             if (($res['error']['id'] ?? -1) === 0) {
                 foreach ($res['result']['addresses'] as $address => $data) {

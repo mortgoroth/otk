@@ -33,9 +33,15 @@
 
             $this->appendReply($user->uid, "🔄 Ищу ошибки на магистралях (до 60 сек)...");
 
-            $elemerr = $this->otk->request("/elem/$elem/errors", [
-                'elem' => $elem, 'avail' => $avail, 'timeout' => 60
-            ]);
+            $elemerr = $this->otk->request(
+                "/elem/$elem/errors",
+                [
+                    'elem'    => $elem,
+                    'avail'   => $avail,
+                    'timeout' => 60
+                ],
+                true
+            );
 
             if (!$elemerr || ($elemerr['error']['id'] ?? -1) !== 0) {
                 $this->appendReply($user->uid, "❌ Ошибка API: ".($elemerr['error']['msg'] ?? 'timeout?'));

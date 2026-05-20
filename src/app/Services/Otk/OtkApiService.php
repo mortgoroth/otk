@@ -25,9 +25,10 @@
                 $response = $post
                     ? $request->post($url, $params)
                     : $request->get($url, $params);
-                Console::warn("REQUEST RESPONSE: ".json_encode($response, JSON_UNESCAPED_UNICODE));
+                Console::warn("REQUEST RESPONSE: ".json_encode($response->body(), JSON_UNESCAPED_UNICODE));
 
                 if ($response->failed()) {
+                    Console::warn("REQUEST FAIL: {$response->body()}");
                     DebugController::write($response->body(), "OTK_API_ERROR: $uri");
                     return [
                         'result' => false,

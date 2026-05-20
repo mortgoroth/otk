@@ -33,9 +33,15 @@
             $this->startReply($user->uid, "🚀 Процесс заливки <code>$swnm</code> запущен...");
 
             // 2. Старт процесса
-            $begin = $this->otk->request('/switch/config/start', [
-                'host' => $swnm, 'uname' => $user->username, 'from' => 'bot'
-            ], true);
+            $begin = $this->otk->request(
+                '/switch/config/start',
+                [
+                    'host' => $swnm,
+                    'uname' => $user->username,
+                    'from' => 'bot'
+                ],
+                true
+            );
 
             DebugController::write($begin, 'CONFIG_START');
             sleep(5);
@@ -44,7 +50,7 @@
                 $this->appendReply($user->uid, "❌ ".($begin['error']['msg'] ?? 'Ошибка запуска'));
                 return;
             }
-
+            $this->alert("начал заливку $swnm", $user);
             $token = $begin['token'];
 
             // Кнопка отмены
@@ -96,15 +102,24 @@
             // 4. Финал процесса
             switch ($state) {
                 case 0:
-                    $this->bot->sendInline($user->uid, "✅ Коммутатор <b>$swnm</b> залит успешно.", [
-                        [['text' => '🔍 Проверить элемент', 'callback_data' => "/elem $elem"]],
-                        [['text' => '📡 Пингануть', 'callback_data' => "/ping $swnm"]]
-                    ]);
+                    $this->bot->sendInline(
+                        $user->uid,
+                        "✅ Коммутатор <b>$swnm</b> залит успешно.",
+                        [
+                            [['text' => '🔍 Проверить элемент', 'callback_data' => "/elem $elem"]],
+                            [['text' => '📡 Пингануть', 'callback_data' => "/ping $swnm"]]
+                        ]
+                    );
+                    $this->alert("✅ успешно залил $swnm", $user);
+
                     break;
                 case 2:
                     $this->killProcess($token, "❌ Коммутатор $swnm не залит! Ошибка! Звони оператору.");
+                    $this->alert("❌ НЕ залил $swnm", $user);
+
                     break;
                 default:
+                    $this->alert("❌ НЕ залил $swnm", $user);
                     $msg = ($status['error']['msg'] ?? 'Ошибка')."! Пробуй еще раз или звони оператору.";
                     $this->killProcess($token, $msg);
             }

@@ -20,7 +20,6 @@
             // 2. Начало выполнения
             $this->startReply($user->uid, "⚙️ Устанавливаю <b>Negotiation Auto</b> на <code>$swnm</code> (порт: $port)...");
 
-            // 3. Запрос к API (POST запрос, так как в оригинале второй параметр true)
             $negot = $this->otk->request("/tg/$swnm/negot/$port", [], true);
 
             // 4. Обработка ошибок

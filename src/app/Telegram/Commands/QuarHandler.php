@@ -26,9 +26,15 @@
             $this->startReply($user->uid, "🧱 Постановка в карантин <code>$swnm</code>...");
 
             // 3. Запрос к API
-            $quarantine = $this->otk->request("/switch/quar/add/$swnm/true", [
-                'uname' => $user->username
-            ]);
+            $quarantine = $this->otk->request(
+                "/switch/quar/add/$swnm/true",
+                [
+                    'uname' => $user->username,
+                    'host' => $swnm,
+                    'node' => true,
+                ],
+                true
+            );
 
             // 4. Обработка результата
             if (!empty($quarantine['result'])) {

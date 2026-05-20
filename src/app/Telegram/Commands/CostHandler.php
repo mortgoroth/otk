@@ -38,9 +38,15 @@
             $this->startReply($user->uid, "📐 Устанавливаю стоимость <b>$cost</b> на <code>$swnm / $port</code>...");
 
             // 3. Запрос к API
-            $res = $this->otk->request('/switch/stp/cost', [
-                'host' => $swnm, 'port' => $port, 'cost' => $cost
-            ]);
+            $res = $this->otk->request(
+                '/switch/stp/cost',
+                [
+                    'host' => $swnm,
+                    'port' => $port,
+                    'cost' => $cost
+                ],
+                true
+            );
 
             DebugController::write($res, 'COST_API_RESPONSE');
 
@@ -50,7 +56,7 @@
             if ($errorId === 0 && ($res['result'] ?? false)) {
                 $msg = "✅ Стоимость <b>$cost</b> успешно установлена на <code>$swnm / $port</code>.";
                 $this->appendReply($user->uid, $msg);
-                // $this->alert(...) // Метод для уведомлений
+                $this->alert("установил стоимость $cost на $swnm / $port", $user);
             } else {
                 $errorMsg = match ($errorId) {
                     0 => $res['error']['msg'] ?? 'Ошибка выполнения',

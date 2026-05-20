@@ -17,7 +17,13 @@
 
             $this->startReply($user->uid, "⚡️ Ищу коротыши на: <code>$location</code>");
 
-            $swlst = $this->otk->request('/tg/swlist5', ['addr' => $location]);
+            $swlst = $this->otk->request(
+                '/tg/swlist5',
+                [
+                    'addr' => $location
+                ],
+                true
+            );
 
             if (empty($swlst['result'])) {
                 $this->appendReply($user->uid, "❌ Коммутаторы по адресу <code>$location</code> не найдены.");
@@ -29,9 +35,14 @@
                     $cleanSwnm = str_replace('A4-', '', $data['swnm']);
                     $this->appendReply($user->uid, "📡 Опрашиваю <b>$cleanSwnm</b>...");
 
-                    $srchPort = $this->otk->request('/tg/srchshort', [
-                        'swnm' => $cleanSwnm, 'swip' => $data['swip']
-                    ]);
+                    $srchPort = $this->otk->request(
+                        '/tg/srchshort',
+                        [
+                            'swnm' => $cleanSwnm,
+                            'swip' => $data['swip']
+                        ],
+                        true
+                    );
 
                     if (($srchPort['error']['id'] ?? -1) === 0) {
                         $shorted = $srchPort['result']['shorted'];

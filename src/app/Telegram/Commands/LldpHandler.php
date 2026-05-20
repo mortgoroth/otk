@@ -23,8 +23,7 @@
             $this->startReply($user->uid, $msg."...");
 
             // 3. Запрос к API
-            $uri = "/tg/$swnm/lldp".($port ? "/$port" : "");
-            $res = $this->otk->request($uri);
+            $res = $this->otk->request("/tg/$swnm/lldp".($port ? "/$port" : ""));
 
             // 4. Обработка ошибок
             $errorId = $res['error']['id'] ?? -1;

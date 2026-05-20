@@ -18,21 +18,22 @@
             $swnm = $params[0];
             DebugController::write("swnm: $swnm", 'SAVE_COMMAND');
 
-            // 2. Начало выполнения
             $this->startReply($user->uid, "💾 Сохраняю конфиг на <code>$swnm</code>...");
 
-            // 3. Запрос к API (используем uname из LDAP для логов на стороне API)
-            $res = $this->otk->request("/switch/$swnm/config/save", [
-                'uname' => $user->username
-            ], true); // Используем POST, так как это действие изменения
+            $res = $this->otk->request(
+                "/switch/$swnm/config/save",
+                [
+                    'uname' => $user->username
+                ],
+                true
+            );
 
-            // 4. Обработка результата
             $errorId = $res['error']['id'] ?? -1;
 
             if ($errorId === 0 && ($res['result'] ?? false)) {
                 $msg = "✅ Конфиг на <b>$swnm</b> сохранен успешно.";
                 $this->appendReply($user->uid, $msg);
-                // $this->alert("сохранил конфиг на $swnm");
+                $this->alert("сохранил конфиг на $swnm", $user);
             } else {
                 $errorMsg = $res['error']['msg'] ?? 'Ошибка сохранения';
                 $this->appendReply($user->uid, "❌ Ошибка сохранения конфига <b>$swnm</b>: $errorMsg");

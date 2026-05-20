@@ -3,14 +3,13 @@
     namespace App\Telegram\Commands;
 
     use App\Models\UserLdap;
+    use App\Services\Telegram\Console;
 
     class MagHandler extends BaseHandler {
-        public bool $needToStore = true;
-
-        public function handle (UserLdap $user, array $params):void {
-            // 1. Валидация параметров
-            if (!isset($params[0]) || !isset($params[1]) || !isset($params[2])) {
-                $this->bot->send($user->uid, "⚠️ Ой, чо щас будет.... А, не, норм. Не все параметры заданы.");
+        public function handle(UserLdap $user, array $params): void {
+            // 1. Валидация параметров (switch, port, status)
+            if (count($params) < 3) {
+                $this->bot->send($user->uid, "⚠️ Использование: <code>/mag [коммутатор] [порт] [статус]</code>");
                 return;
             }
 
@@ -18,107 +17,120 @@
             $port = $params[1];
             $stat = $params[2];
 
-            // Определение статуса (1 - вкл, 2 - выкл)
-            [$status, $actionVerb] = match (strtolower((string) $stat)) {
+            // 2. Определение действия (1 - вкл, 2 - выкл)
+            [$status, $actionVerb] = match (strtolower((string)$stat)) {
                 'вык', 'выкл', 'выключить', '-', '0' => [2, 'выключил'],
-                'вк', 'вкл', 'включить', '+', '1' => [1, 'включил'],
+                'вк', 'вкл', 'включить', '+', '1'    => [1, 'включил'],
                 default => [null, null],
             };
 
             if (!$status) {
-                $this->bot->send($user->uid, "❌ Ошибка ввода данных (статус).");
+                $this->bot->send($user->uid, "❌ Ошибка: Неверный статус порта.");
                 return;
             }
 
-            $this->startReply($user->uid, "⚙️ Работаю с магистралью <code>$swnm</code> / порт <code>$port</code>...");
+            $this->startReply($user->uid, "🚀 Ой, чо щас будет....");
 
             $rebootDelayedSupports = false;
             $rebootDelayedEnabled = false;
 
-            // 2. Страховка: Отложенный рестарт при выключении порта
-            if ($status == 2) {
-                $this->appendReply($user->uid, "🛡 Попробую включить отложенный рестарт...");
-                $rebootDelayed = $this->otk->request("/switch/$swnm/reboot/delayed/enabled", [
-                    'enabled' => true, 'timeout' => 2, 'uname' => $user->username
-                ], true);
+            // 3. Страховка: Отложенный рестарт (только при выключении)
+            if ($status === 2) {
+                $this->appendReply($user->uid, "🛡 Попробую включить отложенный рестарт на <code>$swnm</code>...");
 
-                if (!($rebootDelayed['result'] ?? false)) {
-                    $errMsg = $rebootDelayed['error']['msg'] ?? '';
-                    if (str_contains($errMsg, 'Не поддерживается')) {
-                        $this->appendReply($user->uid, "⚠️ <code>$swnm</code> не умеет в отложенный рестарт, увы...");
-                    } else {
-                        $this->appendReply($user->uid, "⚠️ Ошибка страховки: $errMsg");
-                    }
+                $rebootRes = $this->otk->request(
+                    "/switch/$swnm/reboot/delayed/enabled",
+                    [
+                        'enabled' => true,
+                        'timeout' => 2,
+                        'uname'   => $user->username
+                    ],
+                    true
+                );
+
+                if (!($rebootRes['result'] ?? false)) {
+                    $errMsg = $rebootRes['error']['msg'] ?? 'неизвестно';
+                    $this->appendReply($user->uid, str_contains($errMsg, 'Не поддерживается')
+                        ? "⚠️ $swnm не умеет в отложенный рестарт, действую на свой страх и риск..."
+                        : "⚠️ Ошибка страховки: $errMsg");
                 } else {
-                    $this->appendReply($user->uid, "✅ Отложенный рестарт включен (2 мин).");
+                    $this->appendReply($user->uid, "✅ Отложенный рестарт (2 мин) включен.");
                     $rebootDelayedSupports = true;
                     $rebootDelayedEnabled = true;
                 }
             }
 
-            // 3. Основное действие (переключение порта)
+            // 4. Основное действие: Переключение порта
             $res = $this->otk->request("/tg/$swnm/mag/$port/$status", [], true);
 
             $errorId = $res['error']['id'] ?? -1;
             if ($errorId !== 0) {
                 $errorMsg = match ($errorId) {
-                    1 => 'Некорректное имя коммутатора',
-                    2 => 'Коммутатор не найден',
-                    3 => 'Коммутатор недоступен',
-                    4 => 'Порт не задан или неправильный',
+                    1  => 'Некорректное имя коммутатора',
+                    2  => 'Коммутатор не найден',
+                    3  => 'Коммутатор недоступен',
+                    4  => 'Некорректный порт',
                     91 => 'Заданный порт НЕ магистральный! Ничего не трогаю.',
-                    default => 'Ошибка API: '.($res['error']['msg'] ?? 'unknown'),
+                    default => 'Ошибка API: ' . ($res['error']['msg'] ?? 'unknown'),
                 };
                 $this->appendReply($user->uid, "❌ $errorMsg");
                 return;
             }
 
-            // 4. Проверка последствий
-            if ($status == 2) {
-                sleep(10);
-                $this->appendReply($user->uid, "📡 Ну $actionVerb я <code>$swnm / $port</code>. Проверяю связь...");
+            // 5. Обработка последствий и проверка связи
+            if ($res['result'] ?? false) {
+                if ($status === 2) {
+                    sleep(10);
+                    $this->appendReply($user->uid, "📡 Ну $actionVerb я <code>$swnm / $port</code>. Проверяю связь...");
 
-                if (ping($swnm)) {
-                    $this->appendReply($user->uid, "🎉 Тебе повезло, <code>$swnm</code> не отвалился :)");
-                    $this->disableRebootAndSave($user, $swnm, $rebootDelayedSupports, $rebootDelayedEnabled);
-                } else {
-                    $this->appendReply($user->uid, "😱 Шеф, всё пропало! Ждем 20 сек, вдруг одумается...");
-                    sleep(20);
-                    if (ping($swnm)) {
-                        $this->appendReply($user->uid, "😅 Повезло, <code>$swnm</code> вернулся!");
-                        $this->disableRebootAndSave($user, $swnm, $rebootDelayedSupports, $rebootDelayedEnabled);
+                    if ($this->pingHost($swnm)) {
+                        $this->appendReply($user->uid, "🎉 Тебе повезло, <code>$swnm</code> не отвалился :)");
+                        $this->finalizeSafeAction($user, $swnm, $rebootDelayedSupports, $rebootDelayedEnabled);
                     } else {
-                        $this->appendReply($user->uid, "💀 Всё плохо, <code>$swnm</code> недоступен...");
+                        $this->appendReply($user->uid, "😱 Шеф, всё пропало! Ждем 20 сек, вдруг одумается...");
+                        sleep(20);
+                        if ($this->pingHost($swnm)) {
+                            $this->appendReply($user->uid, "😅 Повезло, <code>$swnm</code> вернулся!");
+                            $this->finalizeSafeAction($user, $swnm, $rebootDelayedSupports, $rebootDelayedEnabled);
+                        } else {
+                            $this->appendReply($user->uid, "💀 Всё плохо, <code>$swnm</code> недоступен...");
+                        }
                     }
+                } else {
+                    $this->appendReply($user->uid, "✅ Порт <b>$port</b> на <code>$swnm</code> $actionVerb.");
+                    if ($this->pingHost($swnm)) $this->appendReply($user->uid, "📡 Коммутатор доступен.");
                 }
-            } else {
-                $this->appendReply($user->uid, "✅ Порт <b>$port</b> на <code>$swnm</code> $actionVerb.");
-                if (ping($swnm))
-                    $this->appendReply($user->uid, "📡 Коммутатор доступен.");
-            }
 
-            // Логирование и алерты (как в оригинале)
-            $this->logAction($user, 'mag', $params, $this->accumulatedText);
-//             $this->alert(...); // Если есть сервис алертов
+                // 6. Рассылка алертов дежурным
+                $this->alert("$actionVerb порт <b>$swnm / $port</b>", $user);
+            }
         }
 
         /**
-         * Снятие страховки и сохранение конфига
+         * Отключение страховки и сохранение конфига
          */
-        private function disableRebootAndSave (UserLdap $user, string $swnm, bool $supports, bool $enabled):void {
+        private function finalizeSafeAction(UserLdap $user, string $swnm, bool $supports, bool $enabled): void
+        {
             if ($supports && $enabled) {
                 $this->appendReply($user->uid, "🧹 Выключаю отложенный рестарт...");
                 $res = $this->otk->request("/switch/$swnm/reboot/delayed/enabled", [
-                    'enabled' => false, 'uname' => $user->username
+                    'enabled' => false,
+                    'uname'   => $user->username
                 ], true);
 
                 if ($res['result'] ?? false) {
                     $this->appendReply($user->uid, "💾 Сохраняю конфиг на <code>$swnm</code>...");
                     $this->otk->request("/switch/$swnm/config/save", ['uname' => $user->username], true);
-                    $this->appendReply($user->uid, "✅ Конфиг сохранен!");
-                } else {
-                    $this->appendReply($user->uid, "❓ Отложенный рестарт всё ещё включен... Проверьте вручную!");
+                    $this->appendReply($user->uid, "✅ Конфиг сохранен.");
                 }
             }
+        }
+
+        /**
+         * Вспомогательный метод пинга (можно заменить на системный exec)
+         */
+        private function pingHost(string $host): bool {
+            exec("ping -c 1 -W 2 " . escapeshellarg($host), $output, $result);
+            return $result === 0;
         }
     }

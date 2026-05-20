@@ -21,9 +21,14 @@
             $this->appendReply($user->uid, "🔎 Ищу информацию об абоненте в БД...");
 
             // 3. Запрос к API
-            $res = $this->otk->request("/tg/portchange/$contract", [
-                'uid' => $user->uid, 'uname' => $user->username
-            ]);
+            $res = $this->otk->request(
+                "/tg/portchange/$contract",
+                [
+                    'uid'   => $user->uid,
+                    'uname' => $user->username
+                ],
+                true
+            );
 
             // 4. Обработка результата
             $errorId = $res['error']['id'] ?? -1;

@@ -26,7 +26,7 @@
             $this->startReply($user->uid, "🚪 Открываю калитку $door СШ16...");
 
             // 2. Делаем запрос к API домофонии
-            $res = $this->otk->request("/intercom/$ip/open_door");
+            $res = $this->otk->request("/intercom/$ip/open_door", [], true);
 
             // 3. Анализируем ответ и дополняем сообщение (update)
             if (($res['message'] ?? '') === 'Done') {

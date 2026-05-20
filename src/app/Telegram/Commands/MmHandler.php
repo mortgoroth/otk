@@ -13,7 +13,13 @@
             }
 
             $this->startReply($user->uid, "🔎 Ищу ММ по адресу <code>$addr</code>...");
-            $res = $this->otk->request('/tg/mm/addr', ['addr' => $addr]);
+            $res = $this->otk->request(
+                '/tg/mm/addr',
+                [
+                    'addr' => $addr
+                ],
+                true
+            );
 
             if (($res['error']['id'] ?? -1) === 0) {
                 foreach ($res['result'] as $data) {

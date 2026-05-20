@@ -16,9 +16,14 @@
 
             $this->startReply($user->uid, "🔍 Ищу все коммутаторы на <code>$location</code>...");
 
-            $swlist = $this->otk->request('/tg/swlist', [
-                'addr' => str_replace(' ', '+', $location), 'strict' => false
-            ]);
+            $swlist = $this->otk->request(
+                '/tg/swlist',
+                [
+                    'addr' => str_replace(' ', '+', $location),
+                    'strict' => false
+                ],
+                true
+            );
 
             $errorId = $swlist['error']['id'] ?? -1;
             if ($errorId !== 0) {

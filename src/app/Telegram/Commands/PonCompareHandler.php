@@ -16,8 +16,7 @@
 
             $this->startReply($user->uid, "📊 Сравниваю PON <code>$swnm</code>".($serial ? " SN: <code>$serial</code>" : ""));
 
-            $uri = "/switch/pon/$swnm/olt/compare".($serial ? "/$serial" : "");
-            $res = $this->otk->request($uri);
+            $res = $this->otk->request("/switch/pon/$swnm/olt/compare".($serial ? "/$serial" : ""));
 
             if (($res['error']['id'] ?? -1) === 0 && isset($res['result'])) {
                 $rs = $res['result'];
