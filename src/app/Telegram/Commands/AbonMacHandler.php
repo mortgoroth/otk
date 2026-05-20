@@ -39,5 +39,6 @@
             } else {
                 $this->appendReply($user->uid, "📭 Маков не найдено.\n✅ Поиск завершен.");
             }
+            $this->logAction($user, 'mac', $params);
         }
     }

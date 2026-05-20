@@ -2,6 +2,7 @@
 
     namespace App\Telegram\Commands;
 
+    use App\Models\Command;
     use App\Models\UserLdap;
     use App\Models\Log;
     use App\Services\Otk\OtkApiService;
@@ -76,12 +77,15 @@
             if (!$this->needToStore)
                 return;
 
+            $command = Command::where('name', $cmdName)->first();
+            $commandId = $command ? $command->id : 0;
+
             Log::create([
                 'created_at'     => now(),
-                'uid' => $user->uid,
-                'command_id' => $cmdName,
+                'uid'            => $user->uid,
+                'command_id'     => $commandId,
                 'command_params' => implode(' ', $params),
-                'response' => mb_substr($this->accumulatedText, 0, 1000), // Ограничение для БД
+                'response'       => mb_substr($this->accumulatedText, 0, 1000),
             ]);
         }
     }
