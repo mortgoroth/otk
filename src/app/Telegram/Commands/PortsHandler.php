@@ -3,16 +3,9 @@
     namespace App\Telegram\Commands;
 
     use App\Models\UserLdap;
-    use App\Services\Otk\OtkApiService;
 
     class PortsHandler extends BaseHandler {
         public bool $needToStore = true;
-
-        public function __construct (
-            protected \App\Services\Telegram\Transport $bot, protected OtkApiService $otk
-        ) {
-            parent::__construct($bot);
-        }
 
         public function handle (UserLdap $user, array $params):void {
             if (empty($params)) {
@@ -53,6 +46,7 @@
             }
 
             $this->appendReply($user->uid, $reply);
+            $this->logAction($user,'ports', $params);
         }
 
         /**

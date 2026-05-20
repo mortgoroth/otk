@@ -9,7 +9,7 @@
             $input = implode(' ', $params);
             $this->startReply($user->uid, "🔍 Ищу все PON коммутаторы на <code>$input</code>...");
 
-            $res = app(\App\Services\Otk\OtkApiService::class)->request('/switch/pon/list/'.urlencode($input));
+            $res = $this->otk->request('/switch/pon/list/'.urlencode($input));
 
             if (($res['error']['id'] ?? -1) === 0 && !empty($res['result'])) {
                 foreach ($res['result'] as $data) {
@@ -25,5 +25,6 @@
             } else {
                 $this->appendReply($user->uid, "❌ Коммутаторы PON не найдены в <code>$input</code>");
             }
+            $this->logAction($user,'ponlist', $params);
         }
     }

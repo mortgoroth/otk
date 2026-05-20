@@ -3,16 +3,9 @@
     namespace App\Telegram\Commands;
 
     use App\Models\UserLdap;
-    use App\Services\Otk\OtkApiService;
 
     class DiagHandler extends BaseHandler {
         public bool $needToStore = true;
-
-        public function __construct (
-            protected \App\Services\Telegram\Transport $bot, protected OtkApiService $otk
-        ) {
-            parent::__construct($bot);
-        }
 
         public function handle (UserLdap $user, array $params):void {
             // 1. Проверка параметров (Коммутатор и Порт)
@@ -25,8 +18,8 @@
                 return;
             }
 
-            $swnm = $params;
-            $port = $params;
+            $swnm = $params[0];
+            $port = $params[1];
 
             // 2. Начало выполнения
             $this->startReply($user->uid, "🧪 Кабельная диагностика и ошибки <code>$swnm</code> / порт <code>$port</code>. Ожидание: 1 мин.");
@@ -61,6 +54,8 @@
 
             // 6. Финальное обновление сообщения
             $this->appendReply($user->uid, $report);
+            $this->logAction($user,'diag', $params);
+
         }
 
         /**

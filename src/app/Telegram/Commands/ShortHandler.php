@@ -3,7 +3,6 @@
     namespace App\Telegram\Commands;
 
     use App\Models\UserLdap;
-    use App\Services\Otk\OtkApiService;
 
     class ShortHandler extends BaseHandler {
         public function handle (UserLdap $user, array $params):void {
@@ -21,7 +20,7 @@
 
             $this->startReply($user->uid, "🔎 Ищу узлы по запросу: <code>$location</code>");
 
-            $res = app(OtkApiService::class)->request('/tg/short', [
+            $res = $this->otk->request('/tg/short', [
                 'location' => $location, 'strict' => false
             ]);
 
@@ -44,5 +43,6 @@
             } else {
                 $this->appendReply($user->uid, "❌ Узлов не нашел...");
             }
+            $this->logAction($user,'short', $params);
         }
     }

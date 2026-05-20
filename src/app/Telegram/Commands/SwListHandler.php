@@ -3,10 +3,7 @@
     namespace App\Telegram\Commands;
 
     use App\Models\UserLdap;
-    use App\Services\Otk\OtkApiService;
     use Otk\Libs\Facades\DB\Topo;
-
-    // фасад из composer.json
 
     class SwListHandler extends BaseHandler {
         public function handle (UserLdap $user, array $params):void {
@@ -19,7 +16,7 @@
 
             $this->startReply($user->uid, "🔍 Ищу все коммутаторы на <code>$location</code>...");
 
-            $swlist = app(OtkApiService::class)->request('/tg/swlist', [
+            $swlist = $this->otk->request('/tg/swlist', [
                 'addr' => str_replace(' ', '+', $location), 'strict' => false
             ]);
 
@@ -64,5 +61,7 @@
                     $this->bot->sendInline($user->uid, $str, $inline);
                 }
             }
+            $this->logAction($user,'swlist', $params);
+
         }
     }

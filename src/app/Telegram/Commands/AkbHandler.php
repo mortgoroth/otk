@@ -6,14 +6,14 @@
 
     class AkbHandler extends BaseHandler {
         public function handle (UserLdap $user, array $params):void {
-            $swname = $params ?? null;
+            $swname = $params[0] ?? null;
             if (!$swname) {
                 $this->bot->send($user->uid, "⚠️ ОШИБКА! Коммутатор не задан.");
                 return;
             }
 
             $this->startReply($user->uid, "🔌 Опрашиваю коммутатор <code>$swname</code>...");
-            $res = app(\App\Services\Otk\OtkApiService::class)->request("/switch/$swname/getdata");
+            $res = $this->otk->request("/switch/$swname/getdata");
 
             if (($res['error']['id'] ?? -1) === 0) {
                 $rs = $res['result'];

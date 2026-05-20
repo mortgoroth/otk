@@ -3,17 +3,10 @@
     namespace App\Telegram\Commands;
 
     use App\Models\UserLdap;
-    use App\Services\Otk\OtkApiService;
     use App\Services\Telegram\DebugController;
 
     class SaveHandler extends BaseHandler {
         public bool $needToStore = true;
-
-        public function __construct (
-            protected \App\Services\Telegram\Transport $bot, protected OtkApiService $otk
-        ) {
-            parent::__construct($bot);
-        }
 
         public function handle (UserLdap $user, array $params):void {
             // 1. Проверка параметра
@@ -44,5 +37,6 @@
                 $errorMsg = $res['error']['msg'] ?? 'Ошибка сохранения';
                 $this->appendReply($user->uid, "❌ Ошибка сохранения конфига <b>$swnm</b>: $errorMsg");
             }
+            $this->logAction($user,'save', $params);
         }
     }

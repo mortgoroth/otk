@@ -5,15 +5,16 @@
     use App\Models\UserLdap;
 
     class AcsHandler extends BaseHandler {
+
         public function handle (UserLdap $user, array $params):void {
-            $abonip = $params ?? null;
+            $abonip = $params[0] ?? null;
             if (!$abonip) {
                 $this->bot->send($user->uid, "⚠️ ОШИБКА! IP абонента не задан");
                 return;
             }
 
             $this->startReply($user->uid, "📡 Ищу в ACS абонента <code>$abonip</code>...");
-            $res = app(\App\Services\Otk\OtkApiService::class)->request("/tg/acs/$abonip");
+            $res = $this->otk->request("/tg/acs/$abonip");
 
             $errorId = $res['error']['id'] ?? -1;
             if ($errorId === 0) {

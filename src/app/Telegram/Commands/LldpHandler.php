@@ -3,17 +3,10 @@
     namespace App\Telegram\Commands;
 
     use App\Models\UserLdap;
-    use App\Services\Otk\OtkApiService;
     use App\Services\Telegram\DebugController;
 
     class LldpHandler extends BaseHandler {
         public bool $needToStore = true;
-
-        public function __construct (
-            protected \App\Services\Telegram\Transport $bot, protected OtkApiService $otk
-        ) {
-            parent::__construct($bot);
-        }
 
         public function handle (UserLdap $user, array $params):void {
             // 1. Проверка коммутатора
@@ -22,8 +15,8 @@
                 return;
             }
 
-            $swnm = $params;
-            $port = $params ?? false;
+            $swnm = $params[0];
+            $port = $params[1] ?? false;
 
             // 2. Анонс поиска
             $msg = "🔍 Ищу соседей <code>$swnm</code>".($port ? " за портом <b>$port</b>" : "");
@@ -68,5 +61,7 @@
             }
 
             $this->appendReply($user->uid, $report);
+            $this->logAction($user,'lldp', $params);
+
         }
     }

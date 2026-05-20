@@ -3,17 +3,9 @@
     namespace App\Telegram\Commands;
 
     use App\Models\UserLdap;
-    use App\Services\Otk\OtkApiService;
-    use Exception;
 
     class MagHandler extends BaseHandler {
         public bool $needToStore = true;
-
-        public function __construct (
-            protected \App\Services\Telegram\Transport $bot, protected OtkApiService $otk
-        ) {
-            parent::__construct($bot);
-        }
 
         public function handle (UserLdap $user, array $params):void {
             // 1. Валидация параметров
@@ -107,7 +99,7 @@
 
             // Логирование и алерты (как в оригинале)
             $this->logAction($user, 'mag', $params, $this->accumulatedText);
-            // $this->alert(...) // Если есть сервис алертов
+//             $this->alert(...); // Если есть сервис алертов
         }
 
         /**

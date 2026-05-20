@@ -6,14 +6,14 @@
 
     class MmChainHandler extends BaseHandler {
         public function handle (UserLdap $user, array $params):void {
-            $chain = $params ?? null;
+            $chain = $params[0] ?? null;
             if (!$chain) {
                 $this->bot->send($user->uid, "⚠️ КТВ-звено не задано");
                 return;
             }
 
             $this->startReply($user->uid, "⛓ Ищу ММ в звене <code>$chain</code>...");
-            $res = app(\App\Services\Otk\OtkApiService::class)->request("/tg/mm/chain/$chain");
+            $res = $this->otk->request("/tg/mm/chain/$chain");
 
             if (($res['error']['id'] ?? -1) === 0) {
                 foreach ($res['result'] as $data) {
@@ -33,5 +33,7 @@
             } else {
                 $this->appendReply($user->uid, "❌ В данном звене ММ не найдены");
             }
+            $this->logAction($user,'mmchain', $params);
+
         }
     }

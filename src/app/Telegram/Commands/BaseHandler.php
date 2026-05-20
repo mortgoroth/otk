@@ -4,6 +4,7 @@
 
     use App\Models\UserLdap;
     use App\Models\Log;
+    use App\Services\Otk\OtkApiService;
     use App\Services\Telegram\DebugController;
     use App\Services\Telegram\Transport;
     use Exception;
@@ -13,8 +14,10 @@
         protected string $accumulatedText = '';
         public bool $needToStore = true;
 
-        public function __construct (protected Transport $bot) {
-        }
+        public function __construct (
+            protected Transport $bot,
+            protected OtkApiService $otk
+        ) {}
 
         abstract public function handle (UserLdap $user, array $params):void;
 

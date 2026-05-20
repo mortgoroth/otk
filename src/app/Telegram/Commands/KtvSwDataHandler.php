@@ -6,14 +6,14 @@
 
     class KtvSwDataHandler extends BaseHandler {
         public function handle (UserLdap $user, array $params):void {
-            $host = $params ?? null;
+            $host = $params[0] ?? null;
             if (!$host) {
                 $this->bot->send($user->uid, "⚠️ КТВ-переключатель не задан");
                 return;
             }
 
             $this->startReply($user->uid, "📡 Опрашиваю КТВ-переключатель <code>$host</code>...");
-            $res = app(\App\Services\Otk\OtkApiService::class)->request("/ktv/sw/$host/stats");
+            $res = $this->otk->request("/ktv/sw/$host/stats");
 
             if (($res['error']['id'] ?? -1) === 0) {
                 $stats = $res['stats'];
@@ -29,5 +29,7 @@
                 $msg = ($res['error']['id'] == 3) ? 'Ничего не найдено' : 'Неизвестное устройство';
                 $this->appendReply($user->uid, "❌ ОШИБКА! $msg");
             }
+            $this->logAction($user,'ktvsw', $params);
+
         }
     }

@@ -13,7 +13,7 @@
             }
 
             $this->startReply($user->uid, "🔑 Ищу точки доступа по договору <code>$contract</code>...");
-            $res = app(\App\Services\Otk\OtkApiService::class)->request("/tg/td/$contract");
+            $res = $this->otk->request("/tg/td/$contract");
 
             if (($res['error']['id'] ?? -1) === 0) {
                 $result = $res['result'];
@@ -37,5 +37,6 @@
             } else {
                 $this->appendReply($user->uid, "❌ ТД по договору $contract не найдены");
             }
+            $this->logAction($user,'td', $params);
         }
     }

@@ -3,17 +3,10 @@
     namespace App\Telegram\Commands;
 
     use App\Models\UserLdap;
-    use App\Services\Otk\OtkApiService;
     use App\Services\Telegram\DebugController;
 
     class CostHandler extends BaseHandler {
         public bool $needToStore = true;
-
-        public function __construct (
-            protected \App\Services\Telegram\Transport $bot, protected OtkApiService $otk
-        ) {
-            parent::__construct($bot);
-        }
 
         public function handle (UserLdap $user, array $params):void {
             // 1. Проверка параметров
@@ -30,8 +23,8 @@
                 return;
             }
 
-            $swnm = $params;
-            $port = $params;
+            $swnm = $params[0];
+            $port = $params[1];
             $cost = (int) $params;
 
             DebugController::write("swnm: $swnm, port: $port, cost: $cost", 'COST_DEBUG');
@@ -68,5 +61,7 @@
                 };
                 $this->appendReply($user->uid, $errorMsg);
             }
+            $this->logAction($user,'cost', $params);
+
         }
     }

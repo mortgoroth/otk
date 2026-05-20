@@ -49,7 +49,5 @@
             } catch (\Exception $e) {
                 // Пользователь мог заблокировать бота
             }
-
-            $this->logAction($user, $cmdName, $params, $msg);
         }
     }

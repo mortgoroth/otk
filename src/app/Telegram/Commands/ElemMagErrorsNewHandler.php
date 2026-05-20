@@ -3,17 +3,10 @@
     namespace App\Telegram\Commands;
 
     use App\Models\UserLdap;
-    use App\Services\Otk\OtkApiService;
     use App\Services\Telegram\DebugController;
 
     class ElemMagErrorsNewHandler extends BaseHandler {
         public bool $needToStore = true;
-
-        public function __construct (
-            protected \App\Services\Telegram\Transport $bot, protected OtkApiService $otk
-        ) {
-            parent::__construct($bot);
-        }
 
         public function handle (UserLdap $user, array $params):void {
             // 1. Валидация параметров
@@ -22,8 +15,8 @@
                 return;
             }
 
-            $elem = trim($params);
-            $interval = $params ?? 60;
+            $elem = trim($params[0]);
+            $interval = $params[1] ?? 60;
 
             // 2. Начало выполнения
             $this->startReply($user->uid, "📊 Поиск ошибок на магистралях в элементе <b>$elem</b> за $interval мин.");
@@ -63,5 +56,7 @@
             }
 
             $this->appendReply($user->uid, "\n🏁 Поиск ошибок завершен!");
+            $this->logAction($user,'elemerr2', $params);
+
         }
     }

@@ -6,7 +6,7 @@
 
     class ElemMagErrorsHandler extends BaseHandler {
         public function handle (UserLdap $user, array $params):void {
-            $elem = $params ?? null;
+            $elem = $params[0] ?? null;
             if (!$elem) {
                 $this->bot->send($user->uid, "⚠️ ОШИБКА! Элемент не задан.");
                 return;
@@ -14,8 +14,7 @@
 
             $this->startReply($user->uid, "📉 Поиск ошибок на магистралях в элементе <b>$elem</b>...");
 
-            $otk = app(\App\Services\Otk\OtkApiService::class);
-            $res = $otk->request("/elem/$elem/avail");
+            $res = $this->otk->request("/elem/$elem/avail");
 
             if (isset($res['error']['id']) && $res['error']['id'] > 0) {
                 $this->appendReply($user->uid, "❌ Ошибка поиска коммутаторов: ".($res['error']['msg'] ?? ''));
@@ -34,7 +33,7 @@
 
             $this->appendReply($user->uid, "🔄 Ищу ошибки на магистралях (до 60 сек)...");
 
-            $elemerr = $otk->request("/elem/$elem/errors", [
+            $elemerr = $this->otk->request("/elem/$elem/errors", [
                 'elem' => $elem, 'avail' => $avail, 'timeout' => 60
             ]);
 
@@ -65,5 +64,7 @@
             }
 
             $this->bot->send($user->uid, "🏁 Проверка элемента $elem завершена!");
+            $this->logAction($user,'elemerr', $params);
+
         }
     }

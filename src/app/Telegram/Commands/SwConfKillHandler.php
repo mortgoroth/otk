@@ -3,17 +3,10 @@
     namespace App\Telegram\Commands;
 
     use App\Models\UserLdap;
-    use App\Services\Otk\OtkApiService;
     use App\Services\Telegram\DebugController;
 
     class SwConfKillHandler extends BaseHandler {
         public bool $needToStore = false;
-
-        public function __construct (
-            protected \App\Services\Telegram\Transport $bot, protected OtkApiService $otk
-        ) {
-            parent::__construct($bot);
-        }
 
         public function handle (UserLdap $user, array $params):void {
             // 1. Проверяем наличие токена (аналог checkParam)
@@ -48,5 +41,6 @@
 
             // 5. Обновляем исходное сообщение результатом
             $this->appendReply($user->uid, $message);
+            $this->logAction($user,'killswc', $params);
         }
     }

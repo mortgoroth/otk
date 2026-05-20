@@ -3,16 +3,9 @@
     namespace App\Telegram\Commands;
 
     use App\Models\UserLdap;
-    use App\Services\Otk\OtkApiService;
 
     class BrokenHandler extends BaseHandler {
         public bool $needToStore = true;
-
-        public function __construct (
-            protected \App\Services\Telegram\Transport $bot, protected OtkApiService $otk
-        ) {
-            parent::__construct($bot);
-        }
 
         public function handle (UserLdap $user, array $params):void {
             // 1. Определяем действие на основе вызванной команды
@@ -41,8 +34,8 @@
                 return;
             }
 
-            $swnm = $params;
-            $ports = $params;
+            $swnm = $params[0];
+            $ports = $params[1];
 
             $txtAction = $action === 'add' ? '🛠 маркировка' : '✅ восстановление';
             $this->startReply($user->uid, "⏳ Выполняю $txtAction битых портов для <code>$swnm</code>: <b>$ports</b>...");
@@ -56,5 +49,6 @@
             } else {
                 $this->appendReply($user->uid, "❌ ОШИБКА! ".($res['error']['msg'] ?? 'неизвестная ошибка'));
             }
+            $this->logAction($user,'broken', $params);
         }
     }

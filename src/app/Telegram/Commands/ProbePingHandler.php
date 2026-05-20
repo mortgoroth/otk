@@ -4,16 +4,9 @@
 
     use App\Models\UserLdap;
     use Otk\Libs\Facades\DB\Tabs;
-    use App\Services\Otk\OtkApiService;
 
     class ProbePingHandler extends BaseHandler {
         public bool $needToStore = true;
-
-        public function __construct (
-            protected \App\Services\Telegram\Transport $bot, protected OtkApiService $otk
-        ) {
-            parent::__construct($bot);
-        }
 
         public function handle (UserLdap $user, array $params):void {
             // 1. Валидация входных данных

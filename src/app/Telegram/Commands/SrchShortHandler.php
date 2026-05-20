@@ -3,7 +3,6 @@
     namespace App\Telegram\Commands;
 
     use App\Models\UserLdap;
-    use App\Services\Otk\OtkApiService;
     use Exception;
 
     class SrchShortHandler extends BaseHandler {
@@ -18,8 +17,7 @@
 
             $this->startReply($user->uid, "⚡️ Ищу коротыши на: <code>$location</code>");
 
-            $otk = app(OtkApiService::class);
-            $swlst = $otk->request('/tg/swlist5', ['addr' => $location]);
+            $swlst = $this->otk->request('/tg/swlist5', ['addr' => $location]);
 
             if (empty($swlst['result'])) {
                 $this->appendReply($user->uid, "❌ Коммутаторы по адресу <code>$location</code> не найдены.");
@@ -31,7 +29,7 @@
                     $cleanSwnm = str_replace('A4-', '', $data['swnm']);
                     $this->appendReply($user->uid, "📡 Опрашиваю <b>$cleanSwnm</b>...");
 
-                    $srchPort = $otk->request('/tg/srchshort', [
+                    $srchPort = $this->otk->request('/tg/srchshort', [
                         'swnm' => $cleanSwnm, 'swip' => $data['swip']
                     ]);
 
@@ -51,6 +49,8 @@
                     }
                 }
                 $this->appendReply($user->uid, "✅ Поиск коротышей на <code>$location</code> завершен.");
+                $this->logAction($user,'srchshort', $params);
+
             } catch (Exception $e) {
                 $this->appendReply($user->uid, "❌ Произошла ошибка при опросе оборудования.");
             }

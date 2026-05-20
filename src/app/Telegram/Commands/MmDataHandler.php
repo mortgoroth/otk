@@ -6,14 +6,14 @@
 
     class MmDataHandler extends BaseHandler {
         public function handle (UserLdap $user, array $params):void {
-            $host = $params ?? null;
+            $host = $params[0] ?? null;
             if (!$host) {
                 $this->bot->send($user->uid, "⚠️ ММ не задан");
                 return;
             }
 
             $this->startReply($user->uid, "📡 Опрашиваю ММ <code>$host</code>...");
-            $res = app(\App\Services\Otk\OtkApiService::class)->request("/tg/mm/data/$host");
+            $res = $this->otk->request("/tg/mm/data/$host");
 
             $errorId = $res['error']['id'] ?? -1;
             if ($errorId === 0) {
@@ -40,5 +40,6 @@
                 };
                 $this->appendReply($user->uid, "❌ ОШИБКА! $msg");
             }
+            $this->logAction($user,'mmdata', $params);
         }
     }

@@ -15,7 +15,7 @@
             }
 
             $this->startReply($user->uid, "🔎 Ищу ONT <code>$serial</code>...");
-            $res = app(\App\Services\Otk\OtkApiService::class)->request("/switch/pon/$swnm/ont/$serial");
+            $res = $this->otk->request("/switch/pon/$swnm/ont/$serial");
 
             if (($res['error']['id'] ?? -1) === 0 && !empty($res['result'])) {
                 $out = "🏠 <b>PON $swnm</b> ({$res['location']})\n";
@@ -28,5 +28,6 @@
             } else {
                 $this->appendReply($user->uid, "❌ Ошибка: ".($res['error']['msg'] ?? 'не найдено'));
             }
+            $this->logAction($user,'ont', $params);
         }
     }

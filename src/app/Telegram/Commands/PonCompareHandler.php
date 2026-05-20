@@ -17,7 +17,7 @@
             $this->startReply($user->uid, "📊 Сравниваю PON <code>$swnm</code>".($serial ? " SN: <code>$serial</code>" : ""));
 
             $uri = "/switch/pon/$swnm/olt/compare".($serial ? "/$serial" : "");
-            $res = app(\App\Services\Otk\OtkApiService::class)->request($uri);
+            $res = $this->otk->request($uri);
 
             if (($res['error']['id'] ?? -1) === 0 && isset($res['result'])) {
                 $rs = $res['result'];
@@ -38,5 +38,6 @@
                 $msg = ($res['error']['id'] == 3) ? "Не найдено записей в истории" : ($res['error']['msg'] ?? "Ошибка API");
                 $this->appendReply($user->uid, "⚠️ $msg");
             }
+            $this->logAction($user,'pon', $params);
         }
     }

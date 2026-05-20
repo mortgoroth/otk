@@ -3,7 +3,6 @@
     namespace App\Telegram\Commands;
 
     use App\Models\UserLdap;
-    use App\Services\Otk\OtkApiService;
     use App\Services\Telegram\DebugController;
 
     class DoorHandler extends BaseHandler {
@@ -13,12 +12,6 @@
             ['ip' => '10.15.26.14', 'addr' => 'ББ208/1,домофон'], ['ip' => '10.15.147.7', 'addr' => 'СШ16,Калитка1'],
             ['ip' => '10.15.147.8', 'addr' => 'СШ16,Калитка2'],
         ];
-
-        public function __construct (
-            protected \App\Services\Telegram\Transport $bot, protected OtkApiService $otk
-        ) {
-            parent::__construct($bot);
-        }
 
         public function handle (UserLdap $user, array $params):void {
             DebugController::write($this->doors, 'DOORS_LIST');
@@ -64,5 +57,6 @@
                 DebugController::write($inline, 'DOOR_INLINE');
                 $this->bot->sendInline($user->uid, 'Доступные калитки:', $inline);
             }
+            $this->logAction($user,'door', $params);
         }
     }

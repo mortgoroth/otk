@@ -6,14 +6,14 @@
 
     class MmHandler extends BaseHandler {
         public function handle (UserLdap $user, array $params):void {
-            $addr = $params ?? null;
+            $addr = $params[0] ?? null;
             if (!$addr) {
                 $this->bot->send($user->uid, "⚠️ ОШИБКА! Адрес не задан.");
                 return;
             }
 
             $this->startReply($user->uid, "🔎 Ищу ММ по адресу <code>$addr</code>...");
-            $res = app(\App\Services\Otk\OtkApiService::class)->request('/tg/mm/addr', ['addr' => $addr]);
+            $res = $this->otk->request('/tg/mm/addr', ['addr' => $addr]);
 
             if (($res['error']['id'] ?? -1) === 0) {
                 foreach ($res['result'] as $data) {
@@ -36,5 +36,6 @@
                 };
                 $this->appendReply($user->uid, "❌ ОШИБКА! $msg");
             }
+            $this->logAction($user,'mm', $params);
         }
     }

@@ -34,7 +34,7 @@
                     'keyboard' => $keyboard,
                     'resize_keyboard' => true,
                     'one_time_keyboard' => false, // Кнопка висит мертвым грузом, пока не залогинится
-                    'input_field_placeholder' => 'Сначала нажмите кнопку Login ⬇️' // Текст ПОВЕРХ ввода
+                    'input_field_placeholder' => 'Сначала нажмите кнопку Login' // Текст ПОВЕРХ ввода
                 ];
             }
 

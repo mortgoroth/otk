@@ -11,7 +11,7 @@
                 return;
 
             $this->startReply($user->uid, "📟 Ищу OLT <code>$swnm</code>...");
-            $res = app(\App\Services\Otk\OtkApiService::class)->request("/switch/pon/$swnm/olt/serials");
+            $res = $this->otk->request("/switch/pon/$swnm/olt/serials");
 
             if (($res['error']['id'] ?? -1) === 0 && !empty($res['result']['serials'])) {
                 $out = "📡 <b>PON $swnm</b> ({$res['result']['location']}):\n";
@@ -34,5 +34,6 @@
             } else {
                 $this->appendReply($user->uid, "❌ Ошибка или данных нет: ".($res['error']['msg'] ?? ''));
             }
+            $this->logAction($user,'olt', $params);
         }
     }

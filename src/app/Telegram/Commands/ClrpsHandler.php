@@ -3,16 +3,9 @@
     namespace App\Telegram\Commands;
 
     use App\Models\UserLdap;
-    use App\Services\Otk\OtkApiService;
 
     class ClrpsHandler extends BaseHandler {
         public bool $needToStore = true;
-
-        public function __construct (
-            protected \App\Services\Telegram\Transport $bot, protected OtkApiService $otk
-        ) {
-            parent::__construct($bot);
-        }
 
         public function handle (UserLdap $user, array $params):void {
             // 1. Проверка коммутатора
@@ -21,8 +14,8 @@
                 return;
             }
 
-            $swnm = $params;
-            $portsRaw = $params ?? null;
+            $swnm = $params[0];
+            $portsRaw = $params[1] ?? null;
 
             // 2. Парсинг диапазона портов (1-5 или просто 5)
             $range = [];
