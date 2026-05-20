@@ -167,9 +167,18 @@
             if (in_array($cmd, ['id', 'help', 'history', 'logout']))
                 return true;
 
-            $access = LdapService::ACCESSED_DEPARTMENTS[$user->department] ?? [];
-            $allowed = $access[$user->subdivision] ?? [];
+            $dept = $user->department;
+            $sub = $user->subdivision;
 
-            return in_array($cmd, $allowed);
+            if (isset(LdapService::ACCESSED_DEPARTMENTS[$dept])) {
+                // Если для подразделения прописан список разрешенных команд
+                if (isset(LdapService::ACCESSED_DEPARTMENTS[$dept][$sub])) {
+                    $allowedCommands = LdapService::ACCESSED_DEPARTMENTS[$dept][$sub];
+                    return in_array($cmd, $allowedCommands);
+                }
+            }
+
+            // 3. Если департамент/подразделение не найдены в ACCESSED_DEPARTMENTS — доступ ПОЛНЫЙ
+            return true;
         }
     }
