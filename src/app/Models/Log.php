@@ -12,14 +12,13 @@
         protected $guarded = [];
 
         public static function getLastCommands(int $uid): array {
-            // Используем твой оригинальный CTE запрос
             $query = "
                 with pre as (
                     select
                        trim( e'\t\n\r\ ' from(c.name || ' ' || l.command_params)) as name,
                        l.created_at
                     from telegram.logs l
-                    left join telegram.commands c on l.command_id = c.name
+                    left join telegram.commands c on l.command_id::varchar = c.name
                     where l.uid = ?
                     order by l.created_at desc
                 ),
