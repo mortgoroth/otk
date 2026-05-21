@@ -22,7 +22,7 @@
                 $ldapUser = $query->first();
 
                 if (!$ldapUser || $ldapUser->isDisabled()) {
-                    Console::error("Пользователь $username не найден или отключен в AD");
+                    Console::warn("Пользователь $username не найден или отключен в AD");
                     return null;
                 }
 

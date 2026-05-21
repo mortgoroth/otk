@@ -3,7 +3,7 @@
     namespace App\Telegram\Commands;
 
     use App\Models\UserLdap;
-    use App\Services\Telegram\DebugController;
+    use App\Services\Telegram\Console;
 
     class ElemMagErrorsNewHandler extends BaseHandler {
         public bool $needToStore = true;
@@ -31,7 +31,7 @@
                 $this->appendReply($user->uid, "   ... не найдено");
             } else {
                 foreach ($errors as $errorData) {
-                    DebugController::write($errorData, 'ZABBIX_A4_ERROR');
+                    Console::error("ZABBIX_A4_ERROR: $errorData");
                     $this->appendReply($user->uid, " • <code>{$errorData['host']}</code> / {$errorData['port']} : <b>{$errorData['errors']}</b>");
                 }
             }
@@ -51,7 +51,7 @@
                         $str .= " • $a3 / $port : <b>$errCount</b>\n";
                     }
                 }
-                DebugController::write($str, 'ZABBIX_A3_ERROR_STRING');
+                Console::error("ZABBIX_A3_ERROR_STRING => $str");
                 $this->appendReply($user->uid, $str);
             }
 

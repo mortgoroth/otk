@@ -11,7 +11,7 @@
          */
         public function getStatus (int $uid):string {
             $user = UserLdap::find($uid);
-            Console::info("LdapAuthService::getStatus user search result => ".json_encode($user, JSON_UNESCAPED_UNICODE));
+            Console::debug("LdapAuthService::getStatus user search result => ".json_encode($user, JSON_UNESCAPED_UNICODE));
 
             // 1. Юзера нет в базе или он вообще не начинал вход
             if (!$user || (!$user->authorized && !$user->attempt)) {
@@ -28,7 +28,7 @@
                 }
                 return 'authorized';
             }
-            Console::info("LdapAuthService::getStatus => ".json_encode($user, JSON_UNESCAPED_UNICODE));
+            Console::debug("LdapAuthService::getStatus => ".json_encode($user, JSON_UNESCAPED_UNICODE));
 
             // 3. Юзер нажал кнопку login, но еще не прислал текст логина
             if ($user->attempt && !$user->authorized) {
@@ -42,7 +42,7 @@
          * Активация режима ввода логина (по кнопке "login")
          */
         public function initAttempt (int $uid, string $tgName):void {
-            Console::info("LdapAuthService::initAttempt => $uid :: $tgName");
+            Console::debug("LdapAuthService::initAttempt => $uid :: $tgName");
             UserLdap::updateOrCreate(
                 ['uid' => $uid],
                 [

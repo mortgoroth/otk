@@ -3,7 +3,7 @@
     namespace App\Telegram\Commands;
 
     use App\Models\UserLdap;
-    use App\Services\Telegram\DebugController;
+    use App\Services\Telegram\Console;
 
     class LldpHandler extends BaseHandler {
         public bool $needToStore = true;
@@ -40,7 +40,7 @@
                 };
 
                 if ($errorId === -1) {
-                    DebugController::write($res, 'LLDP_ERROR');
+                    Console::error("LLDP_ERROR: $res");
                 }
 
                 $this->appendReply($user->uid, $errorMsg);

@@ -2,6 +2,11 @@
 
     namespace App\Services\Telegram;
 
+    use Illuminate\Container\EntryNotFoundException;
+    use Illuminate\Contracts\Container\CircularDependencyException;
+    use Psr\Container\ContainerExceptionInterface;
+    use Psr\Container\NotFoundExceptionInterface;
+    use Symfony\Component\Console\Formatter\OutputFormatterStyle;
     use Symfony\Component\Console\Output\ConsoleOutput;
 
     class Console {
@@ -10,6 +15,9 @@
         protected static function output ():ConsoleOutput {
             if (self::$output === null) {
                 self::$output = new ConsoleOutput();
+                // Регистрируем оранжевый стиль (цвет 208 в 256-цветовой палитре)
+                $orange = new OutputFormatterStyle('#ff8700');
+                self::$output->getFormatter()->setStyle('debug', $orange);
             }
             return self::$output;
         }
@@ -23,34 +31,47 @@
             $currentUid = request()->get('current_tg_uid');
 
             // 1. Если дебаг включен — логируем вообще всё и всех
-            if ($isDebugEnabled) {
-                return true;
-            }
-
+            if ($isDebugEnabled) return true;
             // 2. Если дебаг выключен, проверяем: входит ли юзер в список избранных
             // Если список пуст или UID не совпал — молчим
-            if (!empty($allowedUids) && in_array($currentUid, $allowedUids)) {
-                return true;
-            }
+            if (!empty($allowedUids) && in_array($currentUid, $allowedUids)) return true;
 
-            return false;
+            return app()->runningInConsole() && !request()->has('current_tg_uid');
         }
 
-        public static function info (string $message):void {
-            if (!self::shouldLog()) return;
+        /**
+         * @throws CircularDependencyException
+         * @throws EntryNotFoundException
+         * @throws NotFoundExceptionInterface
+         * @throws ContainerExceptionInterface
+         */
+        private static function write(string $message, string $tag, bool $force = false): void {
+            if (!$force && !self::shouldLog()) return;
+
             $time = date('Y-m-d H:i:s');
-            self::output()->writeln("<info>[$time]</info> $message");
+            $uid = request()->get('current_tg_uid');
+            $prefix = $uid ? " [UID: $uid]" : "";
+
+            self::output()->writeln("<$tag>[$time]</$tag>$prefix $message");
         }
 
-        public static function error (string $message):void {
-            // Ошибки пишем всегда, даже если дебаг выключен,
-            $time = date('Y-m-d H:i:s');
-            self::output()->writeln("<error>[$time]</error> $message");
+        public static function info(string $message): void {
+            self::write($message, 'info'); // Зеленый
         }
 
-        public static function warn (string $message):void {
-            if (!self::shouldLog()) return;
-            $time = date('Y-m-d H:i:s');
-            self::output()->writeln("<comment>[$time]</comment> $message");
+        public static function warn(string $message): void {
+            self::write($message, 'comment'); // Желтый
         }
+
+        /**
+         * Оранжевый таймстамп для глубокого дебага
+         */
+        public static function debug(string $message): void {
+            self::write($message, 'debug'); // Оранжевый
+        }
+
+        public static function error(string $message): void {
+            self::write($message, 'error', true); // Белый на красном (пишем всегда)
+        }
+
     }

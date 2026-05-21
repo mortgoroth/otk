@@ -3,7 +3,6 @@
     namespace App\Telegram\Commands;
 
     use App\Models\UserLdap;
-    use App\Services\Telegram\DebugController;
 
     class UlHandler extends BaseHandler {
         public bool $needToStore = true;
@@ -22,7 +21,6 @@
 
             // 3. Запрос к API
             $connUl = $this->otk->request("/tg/ul/$swnm");
-            DebugController::write($connUl, 'UL_SEARCH_RESULT');
 
             // 4. Обработка ошибок
             $errorId = $connUl['error']['id'] ?? -1;

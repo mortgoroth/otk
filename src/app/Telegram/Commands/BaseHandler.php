@@ -6,7 +6,7 @@
     use App\Models\UserLdap;
     use App\Models\Log;
     use App\Services\Otk\OtkApiService;
-    use App\Services\Telegram\DebugController;
+    use App\Services\Telegram\Console;
     use App\Services\Telegram\Transport;
     use Exception;
 
@@ -38,14 +38,11 @@
 
                         $this->bot->send($recipient->uid, $text);
                     } catch (Exception $e) {
-                        DebugController::write(
-                            "Не удалось отправить алерт для {$recipient->username} (UID: {$recipient->uid}): " . $e->getMessage(),
-                            'ALERT_SEND_ERROR'
-                        );
+                        Console::error("Не удалось отправить алерт для $recipient->username (UID: $recipient->uid): " . $e->getMessage());
                     }
                 }
             } catch (Exception $e) {
-                DebugController::write("Ошибка при получении списка админов для алертов: " . $e->getMessage());
+                Console::error("Ошибка при получении списка админов для алертов: " . $e->getMessage());
             }
         }
 

@@ -3,7 +3,7 @@
     namespace App\Telegram\Commands;
 
     use App\Models\UserLdap;
-    use App\Services\Telegram\DebugController;
+    use App\Services\Telegram\Console;
 
     class CostHandler extends BaseHandler {
         public bool $needToStore = true;
@@ -27,7 +27,7 @@
             $port = $params[1];
             $cost = (int) $params;
 
-            DebugController::write("swnm: $swnm, port: $port, cost: $cost", 'COST_DEBUG');
+            Console::debug("COST_DEBUG => swnm: $swnm, port: $port, cost: $cost");
 
             // 2. Валидация стоимости (бизнес-логика STP)
             if ($cost !== 19 && $cost !== 2000) {
@@ -48,7 +48,7 @@
                 true
             );
 
-            DebugController::write($res, 'COST_API_RESPONSE');
+            Console::debug("COST_API_RESPONSE => $res");
 
             // 4. Обработка результата через match
             $errorId = $res['error']['id'] ?? -1;

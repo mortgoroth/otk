@@ -3,7 +3,6 @@
     namespace App\Telegram\Commands;
 
     use App\Models\UserLdap;
-    use App\Services\Telegram\DebugController;
 
     class SwConfKillHandler extends BaseHandler {
         public bool $needToStore = false;
@@ -22,7 +21,6 @@
 
             // 3. Запрос к API (POST запрос)
             $res = $this->otk->request("/switch/config/kill/$token", [], true);
-            DebugController::write($res, 'KILL_PROCESS_STATUS');
 
             // Небольшая пауза как в оригинале
             sleep(2);

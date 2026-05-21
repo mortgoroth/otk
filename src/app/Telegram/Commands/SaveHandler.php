@@ -3,7 +3,7 @@
     namespace App\Telegram\Commands;
 
     use App\Models\UserLdap;
-    use App\Services\Telegram\DebugController;
+    use App\Services\Telegram\Console;
 
     class SaveHandler extends BaseHandler {
         public bool $needToStore = true;
@@ -16,7 +16,6 @@
             }
 
             $swnm = $params[0];
-            DebugController::write("swnm: $swnm", 'SAVE_COMMAND');
 
             $this->startReply($user->uid, "💾 Сохраняю конфиг на <code>$swnm</code>...");
 

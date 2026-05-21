@@ -3,7 +3,7 @@
     namespace App\Telegram\Commands;
 
     use App\Models\UserLdap;
-    use App\Services\Telegram\DebugController;
+    use App\Services\Telegram\Console;
     use Exception;
 
     class SwConfHandler extends BaseHandler {
@@ -26,7 +26,7 @@
             try {
                 $this->otk->request("/$swnm/replace2db", [], true);
             } catch (Exception $e) {
-                DebugController::write($e->getMessage(), "Error while replace2db");
+                Console::error("Error while replace2db: ".$e->getMessage());
             }
 
             $elem = explode('-', $swnm)[0];
@@ -43,7 +43,7 @@
                 true
             );
 
-            DebugController::write($begin, 'CONFIG_START');
+            Console::debug("CONFIG_START: ".json_encode($begin, JSON_UNESCAPED_UNICODE));
             sleep(5);
 
             if (($begin['error']['id'] ?? -1) !== 0) {

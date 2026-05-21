@@ -7,7 +7,6 @@
     use App\Models\Command;
     use App\Models\UserLdap;
     use App\Services\Ldap\LdapService;
-    use App\Services\Telegram\DebugController;
 
     class HelpHandler extends BaseHandler {
         public bool $needToStore = false;
@@ -30,7 +29,6 @@
 
                 $helpText = $this->prepareHelp($cmdToHelp);
                 $this->bot->send($user->uid, $helpText);
-                DebugController::write($helpText, 'HELP_DETAIL');
                 return;
             }
 
@@ -55,8 +53,6 @@
                         ]
                     ]
                 ], array_chunk($inline, 2));
-
-            DebugController::write($keyboard, 'HELP_INLINE_KEYBOARD');
 
             $this->bot->sendInline($user->uid, "Выберите команду для справки.\n\n💡 Также можно написать: <code>команда ?</code>", $keyboard);
         }

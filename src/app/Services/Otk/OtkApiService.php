@@ -4,7 +4,6 @@
 
     use App\Services\Telegram\Console;
     use Illuminate\Support\Facades\Http;
-    use App\Services\Telegram\DebugController;
 
     class OtkApiService {
         protected string $baseUrl;
@@ -16,7 +15,7 @@
 
         public function request (string $uri, array $params = [], bool $post = false):array {
             $url = $this->baseUrl.$uri;
-            Console::warn("REQUEST URL: $url");
+            Console::debug("REQUEST URL: $url");
 
             try {
                 $request = Http::timeout(600)
@@ -25,11 +24,10 @@
                 $response = $post
                     ? $request->post($url, $params)
                     : $request->get($url, $params);
-                Console::warn("REQUEST RESPONSE: ".json_encode($response->body(), JSON_UNESCAPED_UNICODE));
+                Console::debug("REQUEST RESPONSE: ".json_encode($response->body(), JSON_UNESCAPED_UNICODE));
 
                 if ($response->failed()) {
-                    Console::warn("REQUEST FAIL: {$response->body()}");
-                    DebugController::write($response->body(), "OTK_API_ERROR: $uri");
+                    Console::debug("REQUEST FAIL: $uri => {$response->body()}");
                     return [
                         'result' => false,
                         'message' => "Ошибка внешнего API: ".$response->status(),
@@ -37,7 +35,7 @@
                 }
 
                 $data = $response->json();
-                Console::warn("REQUEST DATA: ".json_encode($data, JSON_UNESCAPED_UNICODE));
+                Console::debug("REQUEST DATA: ".json_encode($data, JSON_UNESCAPED_UNICODE));
 
                 // В старом коде результат лежал в ключе 'result'
 //                return $data['result'] ?? $data;

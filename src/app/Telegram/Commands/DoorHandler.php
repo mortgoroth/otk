@@ -3,7 +3,7 @@
     namespace App\Telegram\Commands;
 
     use App\Models\UserLdap;
-    use App\Services\Telegram\DebugController;
+    use App\Services\Telegram\Console;
 
     class DoorHandler extends BaseHandler {
         public bool $needToStore = true;
@@ -15,7 +15,7 @@
         ];
 
         public function handle (UserLdap $user, array $params):void {
-            DebugController::write($this->doors, 'DOORS_LIST');
+            Console::debug("DOORS_LIST => $this->doors");
 
             // 1. Если калитка выбрана (есть параметр)
             if (isset($params[0])) {
@@ -30,7 +30,7 @@
                 $ip = $foundDoor['ip'];
                 $addr = $foundDoor['addr'];
 
-                DebugController::write("$ip, $addr", 'DOOR_FOUND');
+                Console::debug("DOOR_FOUND => $ip, $addr");
 
                 // Начинаем процесс открытия
                 $this->startReply($user->uid, "🚪 Открываю <b>$addr</b>...");
@@ -55,7 +55,7 @@
                     ];
                 }
 
-                DebugController::write($inline, 'DOOR_INLINE');
+                Console::debug("DOOR_INLINE => $inline");
                 $this->bot->sendInline($user->uid, 'Доступные калитки:', $inline);
             }
             $this->logAction($user,'door', $params);

@@ -2,13 +2,25 @@
 
     namespace App\Models;
 
-//    use App\Http\Controllers\DebugController;
-    use Exception;
     use Illuminate\Database\Eloquent\Model;
-    use Illuminate\Validation\ValidationException;
 
     /**
      * LDAP-ботоюзеры в нашей БД
+     * @property int $id
+     * @property int $uid
+     * @property string $tg_full_name
+     * @property string $username
+     * @property string $ldap_full_name
+     * @property array  $mobile
+     * @property string $department
+     * @property string $subdivision
+     * @property string $territory
+     * @property bool   $protected
+     * @property bool   $is_admin
+     * @property bool   $authorized
+     * @property bool   $attempt
+     * @property int    $last_logon
+     * @property bool   $alert
      */
     class UserLdap extends Model {
 

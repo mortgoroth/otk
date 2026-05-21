@@ -3,10 +3,22 @@
     namespace App\Telegram\Commands;
 
     use App\Models\UserLdap;
+    use App\Services\Telegram\Console;
+    use Exception;
+    use Illuminate\Container\EntryNotFoundException;
+    use Illuminate\Contracts\Container\CircularDependencyException;
+    use Psr\Container\ContainerExceptionInterface;
+    use Psr\Container\NotFoundExceptionInterface;
 
     class AlertManageHandler extends BaseHandler {
         public bool $needToStore = true;
 
+        /**
+         * @throws CircularDependencyException
+         * @throws EntryNotFoundException
+         * @throws NotFoundExceptionInterface
+         * @throws ContainerExceptionInterface
+         */
         public function handle (UserLdap $user, array $params):void {
             // 1. Проверка прав (только админы могут управлять алертами других)
             if (!$user->is_admin) {
@@ -27,7 +39,7 @@
             $statusText = $enable ? 'включены' : 'выключены';
 
             // 4. Поиск целевого пользователя в нашей БД
-            $targetUser = UserLdap::where('username', $targetUsername)
+            $targetUser = UserLdap::whereUsername($targetUsername)
                 ->first();
 
             if (!$targetUser) {
@@ -39,15 +51,15 @@
             $targetUser->update(['alert' => $enable]);
 
             // 6. Ответ админу
-            $msg = "🔔 Уведомления для <b>{$targetUser->ldap_full_name}</b> (@$targetUsername) $statusText.";
+            $msg = "🔔 Уведомления для <b>$targetUser->ldap_full_name</b> (@$targetUsername) $statusText.";
             $this->bot->send($user->uid, $msg);
 
             // 7. Опционально: Уведомляем самого пользователя
             try {
                 $userMsg = $enable ? "🚀 Вам включены системные уведомления о действиях инженеров." : "🔕 Системные уведомления для вас отключены.";
                 $this->bot->send($targetUser->uid, $userMsg);
-            } catch (\Exception $e) {
-                // Пользователь мог заблокировать бота
+            } catch (Exception $e) {
+                Console::error("Ошибка включения/выключения уведомлений для пользователя $targetUser: ".$e->getMessage());
             }
         }
     }

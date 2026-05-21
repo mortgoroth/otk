@@ -11,7 +11,7 @@
             $commands = Log::getLastCommands($user->uid);
 
             if (empty($commands)) {
-                Console::warn("History is empty for user {$user->username}");
+                Console::warn("History is empty for user $user->username");
                 $this->bot->send($user->uid, "📜 Ваша история команд пока пуста.");
                 return;
             }
@@ -24,7 +24,7 @@
                 ];
             }
 
-            Console::info("Sending history inline keyboard to {$user->username}");
+            Console::info("Sending history inline keyboard to $user->username");
 
             $this->bot->sendInline(
                 $user->uid,
