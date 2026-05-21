@@ -46,13 +46,29 @@
             }
 
             // Формируем сетку: кнопка "Все команды" сверху + остальные по 2 в ряд
-            $keyboard = array_merge([
-                    [
-                        [
-                            'text' => '📖 Показать всё описание', 'callback_data' => '/help all'
-                        ]
-                    ]
-                ], array_chunk($inline, 2));
+            $keyboard = array_merge(
+                [[['text' => '📖 Показать всё описание', 'callback_data' => '/help all']]],
+                array_chunk($inline, 2)
+            );
+
+            // Блок для тех, кто подписан на алерты (alert = true)
+            if ($user->alert) {
+                $keyboard[] = [
+                    ['text' => '🔔 Alert ON', 'callback_data' => '/alert_on '],
+                    ['text' => '🔕 Alert OFF', 'callback_data' => '/alert_off ']
+                ];
+            }
+
+            // Блок для Администраторов (is_admin = true)
+            if ($user->is_admin) {
+                // Кнопки управления админами
+                $keyboard[] = [
+                    ['text' => '👨‍💻 Admin ON', 'callback_data' => '/admin_on '],
+                    ['text' => '🚫 Admin OFF', 'callback_data' => '/admin_off '],
+                    ['text' => '🔔 Alert ON', 'callback_data' => '/alert_on '],
+                    ['text' => '🔕 Alert OFF', 'callback_data' => '/alert_off '],
+                ];
+            }
 
             $this->bot->sendInline($user->uid, "Выберите команду для справки.\n\n💡 Также можно написать: <code>команда ?</code>", $keyboard);
         }
