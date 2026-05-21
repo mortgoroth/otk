@@ -19,8 +19,8 @@
          * @throws ContainerExceptionInterface
          */
         public function handle (UserLdap $user, array $params):void {
-            // 1. Проверка прав (только админы могут управлять алертами других)
-            if (!$user->alert) {
+            // 1. Проверка прав (только админы и добавленные в список рассылок могут управлять назначением других админов других)
+            if (!$user->alert && !$user->is_admin) {
                 $this->bot->send($user->uid, "⚠️ У вас нет прав на управление уведомлениями.");
                 return;
             }
