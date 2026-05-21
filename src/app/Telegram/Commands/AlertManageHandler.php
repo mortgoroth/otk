@@ -50,7 +50,7 @@
             $targetUser->update(['alert' => $enable]);
 
             // 6. Ответ админу
-            $msg = "🔔 Уведомления для <b>$targetUser->ldap_full_name</b> (@$targetUsername) $statusText.";
+            $msg = "🔔 Уведомления для <b>$targetUser->ldap_full_name</b> (@$targetUser->tg_full_name) $statusText.";
             $this->bot->send($user->uid, $msg);
 
             // 7. Опционально: Уведомляем самого пользователя

@@ -53,7 +53,7 @@
             $adminIcon = $enable ? "👨‍💻" : "🚫";
             $statusText = $enable ? 'назначен <b>Администратором</b>' : 'исключен из <b>Администраторов</b>';
 
-            $msg = "$adminIcon Пользователь <b>$targetUser->ldap_full_name</b> (@$targetUsername) $statusText.";
+            $msg = "$adminIcon Пользователь <b>$targetUser->ldap_full_name</b> (@$targetUser->tg_full_name) $statusText.";
             $this->bot->send($user->uid, $msg);
 
             // 8. Уведомление пользователя
