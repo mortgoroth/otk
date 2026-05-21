@@ -24,7 +24,7 @@
                 $response = $post
                     ? $request->post($url, $params)
                     : $request->get($url, $params);
-                Console::debug("REQUEST RESPONSE: ".json_encode($response->body(), JSON_UNESCAPED_UNICODE));
+                Console::debug("RESPONSE: ".json_encode($response->body(), JSON_UNESCAPED_UNICODE));
 
                 if ($response->failed()) {
                     Console::debug("REQUEST FAIL: $uri => {$response->body()}");

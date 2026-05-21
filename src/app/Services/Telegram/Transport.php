@@ -80,6 +80,9 @@
             $this->splitAndSend($chatId, $text, $params, function ($finalParams) use (&$messageId) {
                 $response = Http::post("{$this->url}/sendMessage", $finalParams);
                 $messageId = $response->json('result.message_id', 0);
+                if ($response->failed()) {
+                    Console::error("TELEGRAM FAIL: " . $response->body());
+                }
             });
             return $messageId;
         }

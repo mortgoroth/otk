@@ -3,6 +3,7 @@
     namespace App\Telegram\Commands;
 
     use App\Models\UserLdap;
+    use App\Services\Telegram\Console;
 
     class PortsHandler extends BaseHandler {
         public bool $needToStore = true;
@@ -20,7 +21,7 @@
 
             // 2. Запрос к API
             $res = $this->otk->request("/tg/$swnm/ports");
-
+            Console::debug("PORTS REPLY: ".json_encode($res, JSON_UNESCAPED_UNICODE));
             $errorId = $res['error']['id'] ?? -1;
             if ($errorId !== 0) {
                 $msg = match ($errorId) {
@@ -38,7 +39,8 @@
             $result = $res['result'];
             $model = $result['swtype'];
 
-            $reply = "✅ <b>A4-$swnm</b> ($model)\n"."📍 {$result['addr']}\n"."📐 Топология: {$result['topo']}\n";
+            $addr = htmlspecialchars($result['addr'] ?? 'Не указан');
+            $reply = "✅ <b>A4-$swnm</b> ($model)\n"."📍 $addr\n"."📐 Топология: {$result['topo']}\n";
 
             if ($model !== 'TRK-300') {
                 $reply .= "\n📊 <b>Распределение портов:</b>\n";
@@ -54,9 +56,18 @@
          */
         private function formatPortData (array $data):string {
             $translations = [
-                'broken' => 'неисправные', 'used' => 'занятые', 'serv' => 'служебные', 'free' => 'свободные',
-                'ul'     => 'ЮЛ', 'vip' => 'VIP', 'svip' => 'SVIP', 'tel' => 'телефония', 'erth' => 'ЭРТХ',
-                'qnq'    => 'QinQ', 'dom' => 'Домофоны', 'm100' => 'Тариф 100+',
+                'broken' => 'неисправные',
+                'used'   => 'занятые',
+                'serv'   => 'служебные',
+                'free'   => 'свободные',
+                'ul'     => 'ЮЛ',
+                'vip'    => 'VIP',
+                'svip'   => 'SVIP',
+                'tel'    => 'телефония',
+                'erth'   => 'ЭРТХ',
+                'qnq'    => 'QinQ',
+                'dom'    => 'Домофоны',
+                'm100'   => 'Тариф 100+',
             ];
 
             $output = "";
