@@ -35,7 +35,6 @@
             // 3. Определяем действие
             $cmdName = request()->get('command_name');
             $enable = str_contains($cmdName, 'on');
-            $statusText = $enable ? 'добавлен в администраторы' : 'исключен из администраторов';
 
             // 4. Поиск целевого пользователя в нашей БД
             $targetUser = UserLdap::whereUsername($targetUsername)

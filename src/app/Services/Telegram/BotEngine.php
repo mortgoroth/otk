@@ -32,11 +32,11 @@
             if (isset($update['message'])) {
                 $uid = $update['message']['chat']['id'];
                 $text = trim($update['message']['text'] ?? '');
-                $name = $update['message']['from']['first_name'] ?? 'User';
+                $name = $update['message']['from']['username'] ?? 'User';
             } elseif (isset($update['callback_query'])) {
                 $uid = $update['callback_query']['message']['chat']['id'];
                 $text = trim($update['callback_query']['data'] ?? '');
-                $name = $update['callback_query']['from']['first_name'] ?? 'User';
+                $name = $update['callback_query']['from']['username'] ?? 'User';
                 $this->answerCallback($update['callback_query']['id']);
             }
 

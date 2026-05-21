@@ -21,7 +21,7 @@
                 $text = "👤 <b>{$m->ldap_full_name}</b>\n└ @{$m->tg_full_name}";
                 $buttons = [
                     [
-                        ['text' => "🔕 Отключить {$m->username}", 'callback_data' => "/alert_off {$m->username}"]
+                        ['text' => "🔕 Отключить уведомления {$m->username}", 'callback_data' => "/alert_off {$m->username}"]
                     ]
                 ];
                 $this->bot->sendInline($user->uid, $text, $buttons);
