@@ -4,6 +4,7 @@
 
     namespace App\Telegram\Commands;
 
+    use App\Models\Command;
     use App\Models\UserLdap;
     use App\Services\Ldap\LdapService;
     use App\Services\Telegram\DebugController;
@@ -35,7 +36,7 @@
 
             // 3. Если запрошен общий список кнопок (генерация Inline меню)
             // Если доступ ограничен — берем только разрешенные, иначе — все из БД/конфига
-            $commandsSource = $isCutted ? $allowedCommands : \App\Models\Command::where('showhelp', true)
+            $commandsSource = $isCutted ? $allowedCommands : Command::where('showhelp', true)
                 ->pluck('name')
                 ->toArray();
 
@@ -69,13 +70,13 @@
             }
 
             // Ищем описание в БД (таблица telegram.commands)
-            $command = \App\Models\Command::where('name', $cmdName)
+            $command = Command::where('name', $cmdName)
                 ->first();
 
             if (!$command) {
                 return "Инструкция для команды <b>$cmdName</b> не найдена.";
             }
 
-            return "❓ <b>Справка по команде /$cmdName</b>\n\n"."Описание: <i>{$command->description}</i>\n"."Пример: <code>/{$command->name} ".($command->example ?? '')."</code>";
+            return "❓ <b>Справка по команде /$cmdName</b>\n\n"."Описание: <i>{$command->description}</i>\n"."Пример: <code>/".($command->example ?? '')."</code>";
         }
     }
