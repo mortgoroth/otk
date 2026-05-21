@@ -4,7 +4,7 @@
 
     use App\Models\UserLdap;
     use App\Services\LDAP\LdapService;
-    use App\Telegram\Commands\{AbonMacHandler, AbonsHandler, AcsHandler, AdminManageHandler, AkbHandler, AlertManageHandler, AmpHandler, BlinkHandler, BrokenHandler, CabHandler, ClrpsHandler, CostHandler, DiagHandler, DoorHandler, ElemMagErrorsHandler, ElemMagErrorsNewHandler, HstatHandler, IdHandler, HelpHandler, HistoryHandler, ElemHandler, KtvSwDataHandler, LldpHandler, MagHandler, MalyavaHandler, MmChainHandler, MmDataHandler, MmHandler, NegotHandler, OltHandler, OntHandler, PingHandler, PonCompareHandler, PonListHandler, PortChangeHandler, PortsHandler, ProbePingHandler, QuarHandler, SaveHandler, Sh16Handler, ShortHandler, SrchShortHandler, SwConfHandler, SwConfKillHandler, SwListHandler, TdHandler, UlHandler};
+    use App\Telegram\Commands\{AbonMacHandler, AbonsHandler, AcsHandler, AdminManageHandler, AdminsHandler, AkbHandler, AlertManageHandler, AmpHandler, BlinkHandler, BrokenHandler, CabHandler, ClrpsHandler, CostHandler, DiagHandler, DoorHandler, ElemMagErrorsHandler, ElemMagErrorsNewHandler, HstatHandler, IdHandler, HelpHandler, HistoryHandler, ElemHandler, KtvSwDataHandler, LldpHandler, MagHandler, MalyavaHandler, ManagersHandler, MmChainHandler, MmDataHandler, MmHandler, NegotHandler, OltHandler, OntHandler, PingHandler, PonCompareHandler, PonListHandler, PortChangeHandler, PortsHandler, ProbePingHandler, QuarHandler, SaveHandler, Sh16Handler, ShortHandler, SrchShortHandler, SwConfHandler, SwConfKillHandler, SwListHandler, TdHandler, UlHandler};
     use Exception;
 
     class CommandDispatcher {
@@ -121,6 +121,9 @@
             'ктвсв'       => KtvSwDataHandler::class,
             'ktvsw'       => KtvSwDataHandler::class,
             'hstat'       => HstatHandler::class,
+
+            'managers'    => ManagersHandler::class,
+            'admins'      => AdminsHandler::class,
 
             // подписать|отписать юзера на уведомления
             'alert_on'    => AlertManageHandler::class,

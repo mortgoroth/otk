@@ -78,52 +78,46 @@
                 return;
             }
 
-            // 4. РАБОТА С КОМАНДАМИ
+            // --- СОСТОЯНИЕ: АВТОРИЗОВАН ---
             if ($status === 'authorized') {
-                $this->dispatcher->dispatch(UserLdap::whereUid($uid)->first(), $text, $this);
-            }
+                // 1. Извлекаем объект пользователя, чтобы проверить его флаги alert и is_admin
+                $user = UserLdap::whereUid($uid)->first();
 
-//            // --- СОСТОЯНИЕ: ГОСТЬ ---
-//            if ($status === 'guest') {
-//                Console::info("guest => $name::$uid::$text");
-//                if (strtolower($text) === 'login') {
-//                    $this->auth->initAttempt($uid, $name);
-//                    $this->bot->send($uid, "Введите ваш AD логин:", [], true);
-//                } else {
-//                    $this->bot->send($uid, "Для работы необходимо авторизоваться: Нажми кнопку LOGIN!", [['login']]);
-//                }
-//                return;
-//            }
-//
-//            // --- СОСТОЯНИЕ: ОЖИДАНИЕ ЛОГИНА ---
-//            if ($status === 'awaiting_login') {
-//                Console::info("awaiting_login => $name::$uid::$text");
-//                $res = $this->ldap->authenticate($uid, $text);
-//                if ($res['success']) {
-//                    $this->bot->send($uid, "✅ Авторизация успешна.", [['help', 'history', 'logout']]);
-//                } else {
-//                    // Убрали подсказку, просто просим повторить ввод
-//                    $this->bot->send($uid, "❌ Ошибка: " . $res['message'] . "\nПопробуйте ввести логин еще раз:", [], true);
-//                }
-//                return;
-//            }
-//
-//            // --- СОСТОЯНИЕ: АВТОРИЗОВАН ---
-//            if ($status === 'authorized') {
-//                Console::info("authorized => $name::$uid::$text");
-//                if (strtolower($text) === 'logout') {
-//                    UserLdap::whereUid($uid)
-//                        ->update([
-//                            'authorized' => false,
-//                            'attempt' => false
-//                        ]);
-//                    $this->bot->send($uid, "Вы вышли из системы.", [['login']]);
-//                    return;
-//                }
-//
-//                // Отдаем команду в диспетчер
-//                $this->dispatcher->dispatch(UserLdap::find($uid), $text, $this);
-//            }
+                if (!$user) {
+                    $this->bot->send($uid, "Ошибка профиля. Попробуйте /login");
+                    return;
+                }
+
+                // 2. Логика выхода
+                if (strtolower($text) === 'logout') {
+                    $user->update(['authorized' => false, 'attempt' => false]);
+                    $this->bot->send($uid, "Вы вышли из системы.", [['login']]);
+                    return;
+                }
+
+                // 3. Формируем динамическое меню кнопок
+                $keyboardRow = ['help', 'history', 'logout'];
+
+                if ($user->alert) {
+                    $keyboardRow[] = 'managers';
+                }
+
+                if ($user->is_admin) {
+                    // Если вдруг alert=false, но он админ — добавляем managers тоже
+                    if (!in_array('managers', $keyboardRow)) {
+                        $keyboardRow[] = 'managers';
+                    }
+                    $keyboardRow[] = 'admins';
+                }
+
+                // 4. Отдаем команду в диспетчер (передаем уже найденного $user)
+                // Важно: в диспетчере метод send тоже должен поддерживать $keyboardRow,
+                // если хочешь, чтобы кнопки обновлялись при каждом ответе.
+                $this->dispatcher->dispatch($user, $text, $this);
+
+                // Если кнопки пропадают — можно принудительно "освежить" их здесь:
+                // $this->bot->send($uid, "Выберите команду:", [array_chunk($keyboardRow, 3)]);
+            }
         }
 
         /**
