@@ -64,10 +64,16 @@
                 // Кнопки управления админами
                 $keyboard[] = [
                     ['text' => '👨‍💻 Admin ON', 'callback_data' => '/admin_on '],
-                    ['text' => '🚫 Admin OFF', 'callback_data' => '/admin_off '],
-                    ['text' => '🔔 Alert ON', 'callback_data' => '/alert_on '],
-                    ['text' => '🔕 Alert OFF', 'callback_data' => '/alert_off '],
+                    ['text' => '🚫 Admin OFF', 'callback_data' => '/admin_off ']
                 ];
+
+                // Если админ не подписан на алерты, ему всё равно нужны кнопки управления ими
+                if (!$user->alert) {
+                    $keyboard[] = [
+                        ['text' => '🔔 Alert ON', 'callback_data' => '/alert_on '],
+                        ['text' => '🔕 Alert OFF', 'callback_data' => '/alert_off ']
+                    ];
+                }
             }
 
             $this->bot->sendInline($user->uid, "Выберите команду для справки.\n\n💡 Также можно написать: <code>команда ?</code>", $keyboard);
