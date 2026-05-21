@@ -37,6 +37,23 @@
          * Главный метод аутентификации через LDAP
          */
         public function authenticate (int $uid, string $username):array {
+            $username = strtolower(trim($username));
+
+            // 1. ПРОВЕРКА НА УГОН: Не привязан ли этот логин AD к ДРУГОМУ телеграм-аккаунту?
+            $existingOwner = UserLdap::whereUsername($username)->first();
+
+            if ($existingOwner && $existingOwner->uid !== $uid) {
+                Console::error("Попытка угона! UID $uid пытался войти под логином $username (владелец UID: {$existingOwner->uid})");
+
+                // Сбрасываем попытку входа для злоумышленника, чтобы не висел в awaiting_login
+                UserLdap::where('uid', $uid)->update(['attempt' => false]);
+
+                return [
+                    'success' => false,
+                    'message' => "Этот не ваш аккаунт! Обратитесь к администратору."
+                ];
+            }
+
             // 1. Поиск в LDAP (AD или OpenLDAP)
             Console::debug("LDAP <= $username");
             $ldapUser = $this->provider->findUser($username);
@@ -56,7 +73,10 @@
 
             if (!$this->hasAccess($dept, $sub)) {
                 Console::warn("Доступ запрещен: $dept -> $sub");
-                return ['success' => false, 'message' => "У вас нет прав доступа (Отдел: $dept)"];
+                return [
+                    'success' => false,
+                    'message' => "У вас нет прав доступа (Отдел: $dept)"
+                ];
             }
 
             // 3. Обновление записи в БД
@@ -70,7 +90,9 @@
                     'subdivision'    => $sub,
                     'authorized'     => true,
                     'attempt'        => false,
-                    'last_logon'     => time()
+                    'last_logon'     => time(),
+                    'created_at'     => time(),
+                    'updated_at'     => time(),
                 ]
             );
             Console::debug("LDAP => ".json_encode($user, JSON_UNESCAPED_UNICODE));
