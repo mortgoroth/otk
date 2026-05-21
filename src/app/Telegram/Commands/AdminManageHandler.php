@@ -3,6 +3,7 @@
     namespace App\Telegram\Commands;
 
     use App\Models\UserLdap;
+    use App\Services\Telegram\BotEngine;
     use App\Services\Telegram\Console;
     use Exception;
     use Illuminate\Container\EntryNotFoundException;
@@ -57,11 +58,17 @@
 
             // 8. Уведомление пользователя
             try {
+                // Получаем экземпляр BotEngine через контейнер, чтобы собрать кнопки для targetUser
+                $engine = app(BotEngine::class);
+                $newKeyboard = $engine->renderKeyboard($targetUser);
+
                 $userMsg = $enable
                     ? "⚡️ <b>Доступ повышен.</b> Вы назначены администратором бота."
                     : "🛡 <b>Доступ изменен.</b> Вы исключены из списка администраторов.";
 
-                $this->bot->send($targetUser->uid, $userMsg);
+                // Отправляем сообщение С НОВОЙ КЛАВИАТУРОЙ целевому юзеру
+                $this->bot->send($targetUser->uid, $userMsg, $newKeyboard);
+
             } catch (Exception $e) {
                 Console::error("Ошибка уведомления $targetUsername: " . $e->getMessage());
             }

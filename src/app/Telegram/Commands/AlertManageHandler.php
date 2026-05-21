@@ -4,6 +4,7 @@
 
     use App\Models\UserLdap;
     use App\Services\Telegram\Console;
+    use App\Services\Telegram\BotEngine;
     use Exception;
     use Illuminate\Container\EntryNotFoundException;
     use Illuminate\Contracts\Container\CircularDependencyException;
@@ -53,12 +54,26 @@
             $msg = "🔔 Уведомления для <b>$targetUser->ldap_full_name</b> (@$targetUser->tg_full_name) $statusText.";
             $this->bot->send($user->uid, $msg);
 
-            // 7. Опционально: Уведомляем самого пользователя
+            // 7. Уведомление пользователя и ОБНОВЛЕНИЕ КЛАВИАТУРЫ
             try {
-                $userMsg = $enable ? "🚀 Вам включены системные уведомления о действиях инженеров." : "🔕 Системные уведомления для вас отключены.";
-                $this->bot->send($targetUser->uid, $userMsg);
+                // Получаем доступ к BotEngine для пересчета кнопок
+                $engine = app(BotEngine::class);
+                $newKeyboard = $engine->renderKeyboard($targetUser);
+
+                $userMsg = $enable
+                    ? "🚀 Вам включены системные уведомления о действиях инженеров."
+                    : "🔕 Системные уведомления для вас отключены.";
+
+                // Отправляем сообщение с НОВОЙ клавиатурой
+                $this->bot->send($targetUser->uid, $userMsg, $newKeyboard);
+
+                // Если текущий юзер редактировал САМ СЕБЯ, обновляем статику в Транспорте обратно
+                if ($targetUser->uid === $user->uid) {
+                    $engine->renderKeyboard($user);
+                }
+
             } catch (Exception $e) {
-                Console::error("Ошибка включения/выключения уведомлений для пользователя $targetUser: ".$e->getMessage());
+                Console::error("Ошибка обновления кнопок для $targetUsername: " . $e->getMessage());
             }
         }
     }

@@ -35,12 +35,6 @@
                 ];
             } elseif (!empty($keyboard)) {
                 $params['reply_markup'] = $this->formatKeyboard($keyboard);
-//                $params['reply_markup'] = [
-//                    'keyboard' => $keyboard,
-//                    'resize_keyboard' => true,
-//                    'one_time_keyboard' => false, // Кнопка висит мертвым грузом, пока не залогинится
-//                    'input_field_placeholder' => 'Сначала нажмите кнопку Login' // Текст ПОВЕРХ ввода
-//                ];
             } elseif (!empty(self::$currentKeyboard)) {
                 $params['reply_markup'] = $this->formatKeyboard(self::$currentKeyboard);
             }

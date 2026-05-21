@@ -19,7 +19,6 @@
 
             while (true) {
                 try {
-                    // Проверка соединения с БД (фишка из старого кода)
                     DB::connection('ssddb')
                         ->getPdo();
 

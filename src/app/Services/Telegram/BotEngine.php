@@ -63,7 +63,13 @@
 
                 if ($res['success']) {
                     // Теперь он СРАЗУ авторизован
-                    $this->bot->send($uid, "✅ Авторизация успешна. Доступ открыт.", [['help', 'history', 'logout']]);
+                    $user = $res['user'];
+
+                    // 2. Генерируем кнопки на основе прав
+                    $keyboard = $this->renderKeyboard($user);
+
+                    // 3. Отправляем сообщение с правильной клавиатурой
+                    $this->bot->send($uid, "✅ Авторизация успешна. Доступ открыт.", $keyboard);
                 } else {
                     // Если не нашли или ошибка — возвращаем кнопку
                     $this->bot->send($uid, "❌ " . $res['message'], [['login']]);
@@ -83,24 +89,12 @@
                     return;
                 }
 
-                // 3. Формируем динамическое меню кнопок
-                $keyboardRow = ['help', 'history', 'logout'];
+                // 2. Обновляем статическую клавиатуру для текущего контекста
+                // Это гарантирует, что Dispatcher и все вложенные хендлеры
+                // будут использовать актуальные кнопки этого конкретного юзера.
+                $this->renderKeyboard($user);
 
-                if ($user->alert) {
-                    $keyboardRow[] = 'managers';
-                }
-
-                if ($user->is_admin) {
-                    // Если вдруг alert=false, но он админ — добавляем managers тоже
-                    if (!in_array('managers', $keyboardRow)) {
-                        $keyboardRow[] = 'managers';
-                    }
-                    $keyboardRow[] = 'admins';
-                }
-
-                Transport::setStaticKeyboard(array_chunk($keyboardRow, 3));
-                // Теперь любой $this->bot->send() внутри любого хендлера
-                // автоматически приклеит эти кнопки к сообщению.
+                // 3. Передаем управление диспетчеру
                 $this->dispatcher->dispatch($user, $text, $this);
             }
         }
@@ -114,5 +108,24 @@
                 "{$conf['api_url']}/bot{$conf['otk_service_bot']['token']}/answerCallbackQuery",
                 ['callback_query_id' => $callbackQueryId]
             );
+        }
+
+        public function renderKeyboard (UserLdap $user):array {
+            $buttons = ['help', 'history', 'logout'];
+
+            if ($user->alert || $user->is_admin) {
+                $buttons[] = 'managers';
+            }
+
+            if ($user->is_admin) {
+                $buttons[] = 'admins';
+            }
+
+            $keyboard = array_chunk($buttons, 3);
+
+            // Сохраняем в транспорт, чтобы последующие ответы в этой итерации видели эти кнопки
+            Transport::setStaticKeyboard($keyboard);
+
+            return $keyboard;
         }
     }
