@@ -46,14 +46,14 @@
             UserLdap::updateOrCreate(
                 ['uid' => $uid],
                 [
-                    'tg_full_name' => $tgName,
-                    'username' => $tgName,
+                    'tg_full_name'   => $tgName,
+                    'username'       => $tgName,
                     'ldap_full_name' => $tgName,
                     'department'     => $tgName,
                     'subdivision'    => $tgName,
-                    'mobile' => '[]',
-                    'attempt' => true,
-                    'authorized' => false,
+                    'mobile'         => '[]',
+                    'attempt'        => true,
+                    'authorized'     => false,
                     'updated_at'     => date('Y-m-d H:i:s', time()),
                 ]);
         }

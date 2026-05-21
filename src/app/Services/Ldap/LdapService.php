@@ -83,6 +83,7 @@
             $user = UserLdap::updateOrCreate(
                 ['uid' => $uid],
                 [
+                    'tg_full_name'   => $name,
                     'username'       => $ldapUser['username'],
                     'ldap_full_name' => $ldapUser['ldap_full_name'],
                     'department'     => $dept,
