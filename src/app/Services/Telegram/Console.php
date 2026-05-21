@@ -26,8 +26,8 @@
          * Проверка: нужно ли выводить лог в консоль
          */
         private static function shouldLog(): bool {
-            $isDebugEnabled = config('services.telegram.debug', false);
-            $allowedUids = config('services.telegram.debug_uids', []);
+            $isDebugEnabled = config('telegram.debug', false);
+            $allowedUids = config('telegram.debug_uids', []);
             $currentUid = request()->get('current_tg_uid');
 
             // 1. Если дебаг включен — логируем вообще всё и всех
