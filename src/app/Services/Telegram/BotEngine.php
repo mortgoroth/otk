@@ -47,13 +47,6 @@
             // 2. ЛОГИКА АВТОРИЗАЦИИ
             $status = $this->auth->getStatus($uid);
 
-            // 1. Обработка команды LOGOUT (всегда доступна авторизованным)
-            if ($status === 'authorized' && strtolower($text) === 'logout') {
-                UserLdap::whereUid($uid)->update(['authorized' => false, 'attempt' => false]);
-                $this->bot->send($uid, "Вы вышли из системы.", [['login']]);
-                return;
-            }
-
             // 2. Обработка нажатия кнопки LOGIN (инициация)
             if (strtolower($text) === 'login') {
                 $this->auth->initAttempt($uid, $name);
@@ -83,11 +76,6 @@
                 // 1. Извлекаем объект пользователя, чтобы проверить его флаги alert и is_admin
                 $user = UserLdap::whereUid($uid)->first();
 
-                if (!$user) {
-                    $this->bot->send($uid, "Ошибка профиля. Попробуйте /login");
-                    return;
-                }
-
                 // 2. Логика выхода
                 if (strtolower($text) === 'logout') {
                     $user->update(['authorized' => false, 'attempt' => false]);
@@ -110,13 +98,10 @@
                     $keyboardRow[] = 'admins';
                 }
 
-                // 4. Отдаем команду в диспетчер (передаем уже найденного $user)
-                // Важно: в диспетчере метод send тоже должен поддерживать $keyboardRow,
-                // если хочешь, чтобы кнопки обновлялись при каждом ответе.
+                Transport::setStaticKeyboard(array_chunk($keyboardRow, 3));
+                // Теперь любой $this->bot->send() внутри любого хендлера
+                // автоматически приклеит эти кнопки к сообщению.
                 $this->dispatcher->dispatch($user, $text, $this);
-
-                // Если кнопки пропадают — можно принудительно "освежить" их здесь:
-                // $this->bot->send($uid, "Выберите команду:", [array_chunk($keyboardRow, 3)]);
             }
         }
 

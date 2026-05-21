@@ -9,12 +9,16 @@
         use SendsLongMessages;
 
         protected string $url;
+        protected static array $currentKeyboard = [];
 
         public function __construct () {
             $conf = config('telegram');
             $this->url = "{$conf['api_url']}/bot{$conf['otk_service_bot']['token']}";
         }
 
+        public static function setStaticKeyboard (array $keyboard):void {
+            self::$currentKeyboard = $keyboard;
+        }
         /**
          * Стандартная отправка с обычной клавиатурой (ReplyKeyboardMarkup)
          */
@@ -30,15 +34,18 @@
                     'remove_keyboard' => true
                 ];
             } elseif (!empty($keyboard)) {
-                $params['reply_markup'] = [
-                    'keyboard' => $keyboard,
-                    'resize_keyboard' => true,
-                    'one_time_keyboard' => false, // Кнопка висит мертвым грузом, пока не залогинится
-                    'input_field_placeholder' => 'Сначала нажмите кнопку Login' // Текст ПОВЕРХ ввода
-                ];
+                $params['reply_markup'] = $this->formatKeyboard($keyboard);
+//                $params['reply_markup'] = [
+//                    'keyboard' => $keyboard,
+//                    'resize_keyboard' => true,
+//                    'one_time_keyboard' => false, // Кнопка висит мертвым грузом, пока не залогинится
+//                    'input_field_placeholder' => 'Сначала нажмите кнопку Login' // Текст ПОВЕРХ ввода
+//                ];
+            } elseif (!empty(self::$currentKeyboard)) {
+                $params['reply_markup'] = $this->formatKeyboard(self::$currentKeyboard);
             }
 
-            return $this->executeAndGetId($chatId, $text, $params);
+                return $this->executeAndGetId($chatId, $text, $params);
         }
 
         /**
@@ -82,4 +89,18 @@
             });
             return $messageId;
         }
+
+        /**
+         * Вспомогательный метод для единообразного форматирования ReplyKeyboardMarkup
+         */
+        private function formatKeyboard (array $keyboard):array {
+            return [
+                'keyboard' => $keyboard,
+                'resize_keyboard' => true,
+                'one_time_keyboard' => false,
+                'is_persistent' => true,
+                'input_field_placeholder' => '',
+            ];
+        }
+
     }
