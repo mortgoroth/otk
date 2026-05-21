@@ -66,6 +66,7 @@
                     $this->bot->sendInline($user->uid, $str, $inline);
                 }
             }
+            $this->bot->send($user->uid, '✅ Поиск завершен!');
             $this->logAction($user,'swlist', $params);
 
         }
