@@ -4,7 +4,7 @@
 
     use App\Models\UserLdap;
     use App\Services\LDAP\LdapService;
-    use App\Telegram\Commands\{AbonMacHandler, AbonsHandler, AcsHandler, AkbHandler, AlertManageHandler, AmpHandler, BlinkHandler, BrokenHandler, CabHandler, ClrpsHandler, CostHandler, DiagHandler, DoorHandler, ElemMagErrorsHandler, ElemMagErrorsNewHandler, HstatHandler, IdHandler, HelpHandler, HistoryHandler, ElemHandler, KtvSwDataHandler, LldpHandler, MagHandler, MalyavaHandler, MmChainHandler, MmDataHandler, MmHandler, NegotHandler, OltHandler, OntHandler, PingHandler, PonCompareHandler, PonListHandler, PortChangeHandler, PortsHandler, ProbePingHandler, QuarHandler, SaveHandler, Sh16Handler, ShortHandler, SrchShortHandler, SwConfHandler, SwConfKillHandler, SwListHandler, TdHandler, UlHandler};
+    use App\Telegram\Commands\{AbonMacHandler, AbonsHandler, AcsHandler, AdminManageHandler, AkbHandler, AlertManageHandler, AmpHandler, BlinkHandler, BrokenHandler, CabHandler, ClrpsHandler, CostHandler, DiagHandler, DoorHandler, ElemMagErrorsHandler, ElemMagErrorsNewHandler, HstatHandler, IdHandler, HelpHandler, HistoryHandler, ElemHandler, KtvSwDataHandler, LldpHandler, MagHandler, MalyavaHandler, MmChainHandler, MmDataHandler, MmHandler, NegotHandler, OltHandler, OntHandler, PingHandler, PonCompareHandler, PonListHandler, PortChangeHandler, PortsHandler, ProbePingHandler, QuarHandler, SaveHandler, Sh16Handler, ShortHandler, SrchShortHandler, SwConfHandler, SwConfKillHandler, SwListHandler, TdHandler, UlHandler};
     use Exception;
 
     class CommandDispatcher {
@@ -125,6 +125,9 @@
             // подписать|отписать юзера на уведомления
             'alert_on'    => AlertManageHandler::class,
             'alert_off'   => AlertManageHandler::class,
+            // подписать|отписать юзера в админы
+            'admin_on'    => AdminManageHandler::class,
+            'admin_off'   => AdminManageHandler::class,
         ];
 
         public function dispatch (UserLdap $user, string $text, BotEngine $engine):void {

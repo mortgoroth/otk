@@ -10,7 +10,7 @@
     use Psr\Container\ContainerExceptionInterface;
     use Psr\Container\NotFoundExceptionInterface;
 
-    class AlertManageHandler extends BaseHandler {
+    class AdminManageHandler extends BaseHandler {
 
         /**
          * @throws CircularDependencyException
@@ -20,22 +20,22 @@
          */
         public function handle (UserLdap $user, array $params):void {
             // 1. Проверка прав (только админы могут управлять алертами других)
-            if (!$user->alert) {
-                $this->bot->send($user->uid, "⚠️ У вас нет прав на управление уведомлениями.");
+            if (!$user->is_admin) {
+                $this->bot->send($user->uid, "⚠️ У вас нет прав на управление пользователями.");
                 return;
             }
 
             // 2. Проверка параметров
             $targetUsername = $params[0] ?? null;
             if (!$targetUsername) {
-                $this->bot->send($user->uid, "⚠️ Использование: <code>/alert_on логин</code> или <code>/alert_off логин</code>");
+                $this->bot->send($user->uid, "⚠️ Использование: <code>/admin_on логин</code> или <code>/admin_off логин</code>");
                 return;
             }
 
             // 3. Определяем действие
             $cmdName = request()->get('command_name');
             $enable = str_contains($cmdName, 'on');
-            $statusText = $enable ? 'включены' : 'выключены';
+            $statusText = $enable ? 'добавлен в администраторы' : 'исключен из администраторов';
 
             // 4. Поиск целевого пользователя в нашей БД
             $targetUser = UserLdap::whereUsername($targetUsername)
@@ -47,18 +47,24 @@
             }
 
             // 5. Обновление статуса
-            $targetUser->update(['alert' => $enable]);
+            $targetUser->update(['is_admin' => $enable]);
 
             // 6. Ответ админу
-            $msg = "🔔 Уведомления для <b>$targetUser->ldap_full_name</b> (@$targetUsername) $statusText.";
+            $adminIcon = $enable ? "👨‍💻" : "🚫";
+            $statusText = $enable ? 'назначен <b>Администратором</b>' : 'исключен из <b>Администраторов</b>';
+
+            $msg = "$adminIcon Пользователь <b>$targetUser->ldap_full_name</b> (@$targetUsername) $statusText.";
             $this->bot->send($user->uid, $msg);
 
-            // 7. Опционально: Уведомляем самого пользователя
+            // 8. Уведомление пользователя
             try {
-                $userMsg = $enable ? "🚀 Вам включены системные уведомления о действиях инженеров." : "🔕 Системные уведомления для вас отключены.";
+                $userMsg = $enable
+                    ? "⚡️ <b>Доступ повышен.</b> Вы назначены администратором бота."
+                    : "🛡 <b>Доступ изменен.</b> Вы исключены из списка администраторов.";
+
                 $this->bot->send($targetUser->uid, $userMsg);
             } catch (Exception $e) {
-                Console::error("Ошибка включения/выключения уведомлений для пользователя $targetUser: ".$e->getMessage());
+                Console::error("Ошибка уведомления $targetUsername: " . $e->getMessage());
             }
         }
     }
