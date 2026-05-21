@@ -21,8 +21,8 @@
         }
 
         public function handle (array $update):void {
-            set_time_limit(0); // Снимаем ограничение времени выполнения скрипта
-            ini_set('default_socket_timeout', 600); // Таймаут для сокетов
+            set_time_limit(0);
+            ini_set('default_socket_timeout', 600);
 
             $uid = null;
             $text = '';
@@ -47,47 +47,83 @@
             // 2. ЛОГИКА АВТОРИЗАЦИИ
             $status = $this->auth->getStatus($uid);
 
-            // --- СОСТОЯНИЕ: ГОСТЬ ---
-            if ($status === 'guest') {
-                Console::info("guest => $name::$uid::$text");
-                if (strtolower($text) === 'login') {
-                    $this->auth->initAttempt($uid, $name);
-                    $this->bot->send($uid, "Введите ваш AD логин:", [], true);
-                } else {
-                    $this->bot->send($uid, "Для работы необходимо авторизоваться:", [['login']]);
-                }
+            // 1. Обработка команды LOGOUT (всегда доступна авторизованным)
+            if ($status === 'authorized' && strtolower($text) === 'logout') {
+                UserLdap::whereUid($uid)->update(['authorized' => false, 'attempt' => false]);
+                $this->bot->send($uid, "Вы вышли из системы.", [['login']]);
                 return;
             }
 
-            // --- СОСТОЯНИЕ: ОЖИДАНИЕ ЛОГИНА ---
-            if ($status === 'awaiting_login') {
-                Console::info("awaiting_login => $name::$uid::$text");
+            // 2. Обработка нажатия кнопки LOGIN (инициация)
+            if (strtolower($text) === 'login') {
+                $this->auth->initAttempt($uid, $name);
+                $this->bot->send($uid, "Введите ваш AD логин:", [], true);
+                return;
+            }
+            // 3. Обработка ВВОДА ЛОГИНА (состояние гостя или ожидания)
+            if ($status === 'guest' || $status === 'awaiting_login') {
+                // Если юзер прислал текст, но НЕ нажимал login — проверяем его в LDAP
+                // Это и есть "мгновенная" регистрация для новых
+                Console::info("Auth process => $name::$uid::$text");
+
                 $res = $this->ldap->authenticate($uid, $text);
+
                 if ($res['success']) {
-                    $this->bot->send($uid, "✅ Авторизация успешна.", [['help', 'history', 'logout']]);
+                    // Теперь он СРАЗУ авторизован
+                    $this->bot->send($uid, "✅ Авторизация успешна. Доступ открыт.", [['help', 'history', 'logout']]);
                 } else {
-                    // Убрали подсказку, просто просим повторить ввод
-                    $this->bot->send($uid, "❌ Ошибка: " . $res['message'] . "\nПопробуйте ввести логин еще раз:", [], true);
+                    // Если не нашли или ошибка — возвращаем кнопку
+                    $this->bot->send($uid, "❌ " . $res['message'], [['login']]);
                 }
                 return;
             }
 
-            // --- СОСТОЯНИЕ: АВТОРИЗОВАН ---
+            // 4. РАБОТА С КОМАНДАМИ
             if ($status === 'authorized') {
-                Console::info("authorized => $name::$uid::$text");
-                if (strtolower($text) === 'logout') {
-                    UserLdap::whereUid($uid)
-                        ->update([
-                            'authorized' => false,
-                            'attempt' => false
-                        ]);
-                    $this->bot->send($uid, "Вы вышли из системы.", [['login']]);
-                    return;
-                }
-
-                // Отдаем команду в диспетчер
-                $this->dispatcher->dispatch(UserLdap::find($uid), $text, $this);
+                $this->dispatcher->dispatch(UserLdap::whereUid($uid)->first(), $text, $this);
             }
+
+//            // --- СОСТОЯНИЕ: ГОСТЬ ---
+//            if ($status === 'guest') {
+//                Console::info("guest => $name::$uid::$text");
+//                if (strtolower($text) === 'login') {
+//                    $this->auth->initAttempt($uid, $name);
+//                    $this->bot->send($uid, "Введите ваш AD логин:", [], true);
+//                } else {
+//                    $this->bot->send($uid, "Для работы необходимо авторизоваться: Нажми кнопку LOGIN!", [['login']]);
+//                }
+//                return;
+//            }
+//
+//            // --- СОСТОЯНИЕ: ОЖИДАНИЕ ЛОГИНА ---
+//            if ($status === 'awaiting_login') {
+//                Console::info("awaiting_login => $name::$uid::$text");
+//                $res = $this->ldap->authenticate($uid, $text);
+//                if ($res['success']) {
+//                    $this->bot->send($uid, "✅ Авторизация успешна.", [['help', 'history', 'logout']]);
+//                } else {
+//                    // Убрали подсказку, просто просим повторить ввод
+//                    $this->bot->send($uid, "❌ Ошибка: " . $res['message'] . "\nПопробуйте ввести логин еще раз:", [], true);
+//                }
+//                return;
+//            }
+//
+//            // --- СОСТОЯНИЕ: АВТОРИЗОВАН ---
+//            if ($status === 'authorized') {
+//                Console::info("authorized => $name::$uid::$text");
+//                if (strtolower($text) === 'logout') {
+//                    UserLdap::whereUid($uid)
+//                        ->update([
+//                            'authorized' => false,
+//                            'attempt' => false
+//                        ]);
+//                    $this->bot->send($uid, "Вы вышли из системы.", [['login']]);
+//                    return;
+//                }
+//
+//                // Отдаем команду в диспетчер
+//                $this->dispatcher->dispatch(UserLdap::find($uid), $text, $this);
+//            }
         }
 
         /**
