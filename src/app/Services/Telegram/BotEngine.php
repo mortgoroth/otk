@@ -52,7 +52,6 @@
                 Console::info("guest => $name::$uid::$text");
                 if (strtolower($text) === 'login') {
                     $this->auth->initAttempt($uid, $name);
-                    // Убрали пример логина
                     $this->bot->send($uid, "Введите ваш AD логин:", [], true);
                 } else {
                     $this->bot->send($uid, "Для работы необходимо авторизоваться:", [['login']]);
@@ -77,7 +76,7 @@
             if ($status === 'authorized') {
                 Console::info("authorized => $name::$uid::$text");
                 if (strtolower($text) === 'logout') {
-                    UserLdap::where('uid', $uid)
+                    UserLdap::whereUid($uid)
                         ->update([
                             'authorized' => false,
                             'attempt' => false

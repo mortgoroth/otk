@@ -47,8 +47,15 @@
                 ['uid' => $uid],
                 [
                     'tg_full_name' => $tgName,
+                    'username' => $tgName,
+                    'ldap_full_name' => $tgName,
+                    'department'     => $tgName,
+                    'subdivision'    => $tgName,
+                    'mobile' => '[]',
                     'attempt' => true,
-                    'authorized' => false
+                    'authorized' => false,
+                    'created_at'     => time(),
+                    'updated_at'     => time(),
                 ]);
         }
     }
