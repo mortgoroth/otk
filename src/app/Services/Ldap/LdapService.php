@@ -36,14 +36,14 @@
         /**
          * Главный метод аутентификации через LDAP
          */
-        public function authenticate (int $uid, string $username):array {
+        public function authenticate (int $uid, string $username, string $name):array {
             $username = strtolower(trim($username));
 
             // 1. ПРОВЕРКА НА УГОН: Не привязан ли этот логин AD к ДРУГОМУ телеграм-аккаунту?
             $existingOwner = UserLdap::whereUsername($username)->first();
 
             if ($existingOwner && $existingOwner->uid !== $uid) {
-                Console::error("Попытка угона! UID $uid пытался войти под логином $username (владелец UID: {$existingOwner->uid})");
+                Console::error("Попытка угона! UID $uid ($name) пытался войти под логином $username (владелец UID: {$existingOwner->uid})");
 
                 // Сбрасываем попытку входа для злоумышленника, чтобы не висел в awaiting_login
                 UserLdap::where('uid', $uid)->update(['attempt' => false]);
@@ -79,19 +79,18 @@
                 ];
             }
 
-            // 3. Обновление записи в БД
+            // 3. Если всё ок — ПЕРЕЗАПИСЫВАЕМ все заглушки реальными данными
             $user = UserLdap::updateOrCreate(
-                ['uid' => $uid], // Найти по UID
+                ['uid' => $uid],
                 [
                     'username'       => $ldapUser['username'],
                     'ldap_full_name' => $ldapUser['ldap_full_name'],
-                    'mobile'         => $ldapUser['mobile'], // Сохранится как JSON благодаря casts в модели
                     'department'     => $dept,
                     'subdivision'    => $sub,
+                    'mobile'         => $ldapUser['mobile'],
                     'authorized'     => true,
                     'attempt'        => false,
-                    'last_logon'     => time(),
-                    'created_at'     => date('Y-m-d H:i:s', time()),
+                    'last_logon'     => time()
                 ]
             );
             Console::debug("LDAP => ".json_encode($user, JSON_UNESCAPED_UNICODE));

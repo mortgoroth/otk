@@ -66,7 +66,7 @@
                 // Это и есть "мгновенная" регистрация для новых
                 Console::info("Auth process => $name::$uid::$text");
 
-                $res = $this->ldap->authenticate($uid, $text);
+                $res = $this->ldap->authenticate($uid, $text, $name);
 
                 if ($res['success']) {
                     // Теперь он СРАЗУ авторизован
