@@ -54,8 +54,7 @@
                     'mobile' => '[]',
                     'attempt' => true,
                     'authorized' => false,
-                    'created_at'     => time(),
-                    'updated_at'     => time(),
+                    'updated_at'     => date('Y-m-d H:i:s', time()),
                 ]);
         }
     }

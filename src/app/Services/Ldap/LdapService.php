@@ -91,8 +91,7 @@
                     'authorized'     => true,
                     'attempt'        => false,
                     'last_logon'     => time(),
-                    'created_at'     => time(),
-                    'updated_at'     => time(),
+                    'created_at'     => date('Y-m-d H:i:s', time()),
                 ]
             );
             Console::debug("LDAP => ".json_encode($user, JSON_UNESCAPED_UNICODE));
