@@ -31,13 +31,14 @@
             ];
 
             if ($removeKeyboard) {
-                $params['reply_markup'] = [
-                    'remove_keyboard' => true
-                ];
+                // $params['reply_markup'] = ['remove_keyboard' => true];
             } elseif (!empty($keyboard)) {
                 $params['reply_markup'] = $this->formatKeyboard($keyboard);
-            } elseif (!empty(self::$currentKeyboard)) {
-                $params['reply_markup'] = $this->formatKeyboard(self::$currentKeyboard);
+            }
+            // Если мы передали пустой массив [] — НИЧЕГО не добавляем.
+            // Это и будет наше "чистое" сообщение для редактирования.
+            elseif ($keyboard === [] && empty(self::$currentKeyboard)) {
+                // ничего
             }
 
             return $this->executeAndGetId($chatId, $text, $params);
@@ -71,19 +72,26 @@
                 'parse_mode' => 'HTML',
             ];
 
+            // Добавляем Inline-кнопки, если они переданы (например, из SwList)
             if (!empty($inlineKeyboard)) {
                 $params['reply_markup'] = ['inline_keyboard' => $inlineKeyboard];
             }
+            // ВАЖНО: Мы НЕ добавляем сюда Reply-клавиатуру (статику),
+            // чтобы не блокировать редактирование в Telegram.
 
             $response = Http::post("$this->url/editMessageText", $params);
             if ($response->failed()) {
                 // Если HTML сломался, пробуем отправить без него, чтобы не висеть
                 Console::error("EDIT FAIL [$messageId]: " . $response->body());
+                // "План Б": пробуем без HTML, если ошибка в тегах
                 $params['text'] = strip_tags($text);
                 unset($params['parse_mode']);
-                Http::post("$this->url/editMessageText", $params);
+                $retryResponse = Http::post("$this->url/editMessageText", $params);
+                if ($retryResponse->failed()) {
+                    return 0; // Совсем не получилось — BaseHandler пришлет новое сообщение
+                }
             }
-            return $response->json('result.message_id', $messageId);
+            return $messageId;
         }
 
         /**

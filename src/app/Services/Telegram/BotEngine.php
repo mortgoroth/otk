@@ -69,7 +69,7 @@
                     $keyboard = $this->renderKeyboard($user);
 
                     // 3. Отправляем сообщение с правильной клавиатурой
-                    $this->bot->send($uid, "✅ Авторизация успешна. Доступ открыт.", $keyboard);
+                    $this->bot->send($uid, "✅ Авторизация успешна", $keyboard);
                 } else {
                     // Если не нашли или ошибка — возвращаем кнопку
                     $this->bot->send($uid, "❌ " . $res['message'], [['login']]);

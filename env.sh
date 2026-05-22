@@ -64,7 +64,7 @@ AWS_USE_PATH_STYLE_ENDPOINT=false
 
 VITE_APP_NAME=\"\${APP_NAME}\"
 
-OTK_API_URL=https://otk-rm-test.novotelecom.ru/api/v2
+OTK_API_URL=https://otk-api.novotelecom.ru/api
 TFTP_PORT=22
 
 SESSION_DRIVER=file

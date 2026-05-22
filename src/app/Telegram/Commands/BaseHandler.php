@@ -59,7 +59,7 @@
          */
         protected function startReply (int $uid, string $text):void {
             $this->accumulatedText = $text."\n";
-            $this->messageId = $this->bot->send($uid, $this->accumulatedText);
+            $this->messageId = $this->bot->send($uid, $this->accumulatedText, []); // Пустой массив из аргументов НЕ УДАЛЯТЬ!!!!!
             Console::debug("START REPLY ID: " . $this->messageId);
         }
 
@@ -67,14 +67,8 @@
          * Дополнение сообщения (аналог __update)
          */
         protected function appendReply (int $uid, string $newText):void {
-            $this->accumulatedText = $newText;
-            $res = $this->bot->update($uid, $this->messageId, $this->accumulatedText);
-            if (!$res || $res === 0) {
-                $this->messageId = $this->bot->send($uid, $this->accumulatedText);
-                Console::debug("EDIT FAILED -> Sent as new message: " . $this->messageId);
-            } else {
-                Console::debug("EDIT SUCCESS for ID: " . $this->messageId);
-            }
+            $this->accumulatedText .= "\n$newText\n";
+            $this->bot->update($uid, $this->messageId, $this->accumulatedText);
         }
 
         protected function logAction (UserLdap $user, string $cmdName, array $params):void {

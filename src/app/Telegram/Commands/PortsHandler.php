@@ -48,15 +48,6 @@
                 $reply .= $this->formatPortData($result['ports'] ?? []);
             }
 
-
-//            if ($this->messageId > 0) {
-//                $this->appendReply($user->uid, $reply);
-////                $this->startReply($user->uid, $reply);
-//            } else {
-//                // Если по какой-то причине ID нет, просто отправляем новым сообщением
-//                $this->bot->send($user->uid, $this->accumulatedText . $reply);
-//            }
-
             $this->appendReply($user->uid, $reply);
             $this->logAction($user,'ports', $params);
         }
