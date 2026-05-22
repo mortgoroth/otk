@@ -95,7 +95,6 @@ build_composer:
           sudo supervisorctl restart otk-service-bot-worker:*;
         else
           echo 'Node is BACKUP, skipping bot restart.';
-#          sudo supervisorctl stop otk-service-bot2;
           sudo supervisorctl stop otk-service-bot-worker:*;
         fi
       "
