@@ -30,12 +30,36 @@
                 Console::error("Error while replace2db: ".$e->getMessage());
             }
 
+            // 3. Создаем "холст" для процесса
             $this->startReply($user->uid, "🚀 Процесс заливки <code>$swnm</code> запущен...");
 
-            ExecuteSwConf::dispatch($user, $swnm, $this->messageId);
+            // 4. Запрос токена в API (быстрый запрос)
+            $begin = $this->otk->request('/switch/config/start', [
+                'host'  => $swnm,
+                'uname' => $user->username,
+                'from'  => 'bot'
+            ], true);
 
-            $this->logAction($user,'config', $params);
+            if (($begin['error']['id'] ?? -1) !== 0) {
+                $this->appendReply($user->uid, "❌ Ошибка запуска: " . ($begin['error']['msg'] ?? 'API error'));
+                return;
+            }
 
+            $token = $begin['token'] ?? null;
+            if (!$token) {
+                $this->appendReply($user->uid, "❌ Ошибка: API не вернуло токен.");
+                return;
+            }
+
+            // Дописываем токен в то же сообщение
+            $this->appendReply($user->uid, "✅ Сессия создана. Token: <code>$token</code>");
+
+            // 5. Передаем управление в очередь
+            // ВНИМАНИЕ: Передаем $this->messageId, чтобы Job редактировал ЭТО ЖЕ сообщение
+            ExecuteSwConf::dispatch($user, $swnm, $token, $this->messageId);
+
+            // 6. Логгирование и алерт
+            $this->logAction($user, 'config', $params);
+            $this->alert("начал заливку $swnm", $user);
         }
-
     }
