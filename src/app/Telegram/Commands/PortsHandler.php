@@ -39,12 +39,14 @@
 
             // 3. Формирование отчета
             $result = $res['result'];
-            $model = $result['swtype'];
+            $model  = htmlspecialchars($result['swtype'] ?? 'Unknown');
             Console::debug("FORM 1");
 
             $addr = htmlspecialchars($result['addr'] ?? 'Не указан');
+            $swnm = htmlspecialchars($swnm);
+            $topo = htmlspecialchars($result['topo'] ?? 'не указана');
             Console::debug("ADDR: $addr");
-            $reply = "✅ <b>A4-$swnm</b> ($model)\n"."📍 $addr\n"."📐 Топология: {$result['topo']}\n";
+            $reply = "✅ <b>A4-$swnm</b> ($model)\n"."📍 $addr\n"."📐 Топология: $topo\n";
             Console::debug("REPLY1: $reply");
 
             if ($model !== 'TRK-300') {
@@ -84,9 +86,10 @@
                 $label = $translations[$key] ?? $key;
                 $ports = array_filter(explode(',', $val));
                 $count = count($ports);
-
                 $ranges = $count > 0 ? $this->compressRanges($ports) : 'нет';
-                $output .= " • $label ($count): <code>$ranges</code>\n";
+                $safeLabel = htmlspecialchars($label);
+                $safeRanges = htmlspecialchars($ranges); // Особенно тут!
+                $output .= " • $safeLabel ($count): <code>$safeRanges</code>\n";
             }
             return $output;
         }

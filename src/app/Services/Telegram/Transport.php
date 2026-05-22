@@ -76,6 +76,13 @@
             }
 
             $response = Http::post("$this->url/editMessageText", $params);
+            if ($response->failed()) {
+                // Если HTML сломался, пробуем отправить без него, чтобы не висеть
+                Console::error("EDIT FAIL: " . $response->body());
+                $params['text'] = strip_tags($text);
+                unset($params['parse_mode']);
+                Http::post("$this->url/editMessageText", $params);
+            }
             return $response->json('result.message_id', $messageId);
         }
 
