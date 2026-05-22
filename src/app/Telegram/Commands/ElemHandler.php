@@ -34,7 +34,7 @@
 
             $logSession = $this->otk->request('/elem/logs', $initData, true);
             Console::debug("LOGSESSION: ".json_encode($logSession, JSON_UNESCAPED_UNICODE));
-            $sessionId = $logSession['id'] ?? null;
+            $sessionId = current($logSession) ?? null;
 
             if (!$sessionId) {
                 $this->appendReply($user->uid, "❌ Ошибка: не удалось создать сессию проверки.");
