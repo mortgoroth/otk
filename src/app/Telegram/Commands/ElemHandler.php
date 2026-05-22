@@ -37,7 +37,6 @@
                 return;
             }
 
-            $this->updateStatus($sessionId, 1);
 
             ExecuteElemCheck::dispatch($user, $element, $this->messageId, (int)$sessionId);
 
@@ -123,11 +122,4 @@
 
         }
 
-        /**
-         * Вспомогательный метод для обновления статуса проверки в API
-         */
-        private function updateStatus (int $sessionId, int $status, array $additional = []):void {
-            $params = array_merge(['status' => $status], $additional);
-            $this->otk->request("/elem/logs/$sessionId/update", $params, true);
-        }
     }

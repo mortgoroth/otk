@@ -12,10 +12,11 @@
     use Illuminate\Queue\SerializesModels;
     use Exception;
 
-    class ExecuteElemCheck implements ShouldQueue {
+    class ExecuteElemCheck implements ShouldQueue
+    {
         use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-        public $timeout = 700; // С запасом под магистрали
+        public $timeout = 700;
 
         public function __construct(
             protected UserLdap $user,
@@ -24,66 +25,104 @@
             protected int $sessionId
         ) {}
 
-        public function handle(OtkApiService $otk, Transport $bot): void {
+        public function handle (OtkApiService $otk, Transport $bot):void {
             $element = $this->element;
             $uid = $this->user->uid;
             $sid = $this->sessionId;
+            $head = "в элементе $element:";
 
-            $report = "🔍 <b>Проверка элемента $element</b>\n";
+            $report = "🔍 <b>Результаты проверки $head</b>\n\n";
 
             try {
-                // --- ШАГ 1: ПЕРВЫЙ ТЯЖЕЛЫЙ ЗАПРОС ---
-                $bot->update($uid, $this->messageId, $report . "📡 Поиск недоступных коммутаторов...");
-                $otk->request("/elem/logs/$sid/update", ['status' => 1], true);
-
+                $this->updateStatus($otk, $sid, 1);
+                // --- 1. ПРОВЕРКА ДОСТУПНОСТИ ---
                 $getAvail = $otk->request("/elem/$element/avail");
 
                 if (($getAvail['error']['id'] ?? -1) !== 0) {
-                    $bot->update($uid, $this->messageId, $report . "❌ Элемент $element не найден в базе.");
+                    $bot->update($uid, $this->messageId, "❌ Элемент $element не найден.");
                     return;
                 }
 
+                $this->updateStatus($otk, $sid, 2);
                 $avail = $getAvail['result']['avail'] ?? [];
                 $unavail = $getAvail['result']['unavail'] ?? [];
-                $otk->request("/elem/logs/$sid/update", ['status' => 2, 'unavail' => $unavail, 'avail' => $avail], true);
 
-                $report .= "• Доступность: " . (empty($unavail) ? "✅" : "⚠️ " . count($unavail) . " offline") . "\n";
+                $unavailText = empty($unavail) ? 'отсутствуют.' : implode("\n", $unavail);
+                $report .= "<b>Недоступные коммутаторы:</b>\n$unavailText\n\n";
+
                 $bot->update($uid, $this->messageId, $report . "🔄 Запуск проверки STP...");
 
-                // --- ШАГ 2: STP ---
-                $otk->request("/elem/logs/$sid/update", ['status' => 3], true);
+                // --- 2. ПРОВЕРКА STP ---
+                $this->updateStatus($otk, $sid, 3, ['unavail' => $unavail, 'avail' => $avail]);
                 $chSTP = $otk->request("/elem/$element/stp", ['avail' => $avail], true);
 
                 if (($chSTP['error']['id'] ?? -1) === 0) {
-                    $otk->request("/elem/logs/$sid/update", [
-                        'status' => 4,
-                        'stp' => ['alternates' => $chSTP['result']['alternates'] ?? [], 'verdict' => $chSTP['verdict'] ?? '']
-                    ], true);
+                    $this->updateStatus($otk, $sid, 4);
 
-                    $report .= "• STP: " . ($chSTP['verdict'] ?? "OK") . "\n";
+                    // Пропущенные (STP)
+                    if (!empty($chSTP['skipped'])) {
+                        $report .= "<b>Пропущенные (STP):</b>\n";
+                        foreach ($chSTP['skipped'] as $swnm => $reason) {
+                            $report .= " • $swnm: $reason\n";
+                        }
+                        $report .= "\n";
+                    }
+
+                    // Альтернативные порты
+                    $dbg_text = "";
+                    if (!empty($chSTP['result']['alternates'])) {
+                        $dbg_text = "\n<b>Найденные альтернативные порты:</b>\n" . implode("\n", $chSTP['result']['alternates']);
+                        $this->updateStatus($otk, $sid, 4, [
+                            'stp' => [
+                                'alternates' => $chSTP['result']['alternates'],
+                                'verdict' => $chSTP['verdict']
+                            ]
+                        ]);
+                    }
+
+                    $report .= "<b>STP:</b>\n{$chSTP['verdict']}\n$dbg_text\n\n";
                 }
-                $bot->update($uid, $this->messageId, $report . "⏱ Магистрали (2-3 минуты)...");
 
-                // --- ШАГ 3: ОШИБКИ (САМЫЙ ДОЛГИЙ) ---
-                $otk->request("/elem/logs/$sid/update", ['status' => 5], true);
+                $bot->update($uid, $this->messageId, $report . "⏱ Проверка магистралей (2-3 мин)...");
+
+                // --- 3. ПРОВЕРКА ОШИБОК ---
+                $this->updateStatus($otk, $sid, 5);
                 $chErr = $otk->request("/elem/$element/errors", ['avail' => $avail], true);
 
                 if (($chErr['error']['id'] ?? -1) === 0) {
-                    $otk->request("/elem/logs/$sid/update", [
-                        'status' => 6,
+                    $this->updateStatus($otk, $sid, 6, [
                         'errors' => $chErr['verdict'],
                         'skipped' => $chErr['skipped'] ?? []
-                    ], true);
+                    ]);
 
-                    $report .= "• Ошибки: " . (empty($chErr['verdict']) ? "✅" : "❌") . "\n\n";
-                    $report .= "<b>Результат:</b>\n" . implode("\n", $chErr['verdict']);
+                    // Пропущенные (Ошибки)
+                    if (!empty($chErr['skipped'])) {
+                        $report .= "<b>Пропущенные (Ошибки):</b>\n";
+                        foreach ($chErr['skipped'] as $swnm => $reason) {
+                            $report .= " • $swnm: $reason\n";
+                        }
+                        $report .= "\n";
+                    }
 
+                    $report .= "<b>Ошибки:</b>\n" . implode("\n", $chErr['verdict']) . "\n\n";
+                    $report .= "<b>Ошибки на А3:</b>\n" . implode("\n", $chErr['verdict_a3'] ?? []) . "\n";
+
+                    // Финальное обновление основного сообщения
                     $bot->update($uid, $this->messageId, $report);
-                    $bot->send($uid, "✅ Проверка элемента $element завершена.");
+
+                    // Отдельный пуш о завершении (как в твоем коде)
+                    $bot->send($uid, "✅ <b>Проверка элемента $element завершена</b>");
+                } else {
+                    $bot->update($uid, $this->messageId, $report . "❌ Ошибка при проверке магистралей.");
                 }
 
             } catch (Exception $e) {
-                $bot->update($uid, $this->messageId, $report . "🚨 Ошибка воркера: " . $e->getMessage());
+                $bot->update($uid, $this->messageId, $report . "\n🚨 <b>Критическая ошибка Job:</b>\n" . $e->getMessage());
             }
+        }
+
+        private function updateStatus (OtkApiService $otk, int $sessionId, int $status, array $additional = []):void {
+            $params = array_merge(['status' => $status], $additional);
+            $otk->request("/elem/logs/$sessionId/update", $params, true);
         }
     }
