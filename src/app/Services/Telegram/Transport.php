@@ -90,15 +90,17 @@
          * Вспомогательный метод для запуска splitAndSend через трейт
          */
         private function executeAndGetId (int $chatId, string $text, array $params):int {
-            $messageId = 0;
-            $this->splitAndSend($chatId, $text, $params, function ($finalParams) use (&$messageId) {
-                $response = Http::post("$this->url/sendMessage", $finalParams);
-                $messageId = $response->json('result.message_id', 0);
-                if ($response->failed()) {
-                    Console::error("TELEGRAM FAIL: " . $response->body());
-                }
+            if (mb_strlen($text) < 3000) { // Для коротких строк
+                $res = Http::post("$this->url/sendMessage", $params);
+                return $res->json('result.message_id', 0);
+            }
+
+            $id = 0;
+            $this->splitAndSend($chatId, $text, $params, function ($p) use (&$id) {
+                $r = Http::post("$this->url/sendMessage", $p);
+                $id = $r->json('result.message_id', 0);
             });
-            return $messageId;
+            return $id;
         }
 
         /**
