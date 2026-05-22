@@ -22,14 +22,14 @@
 
             // 3. Создаем запись в логе API и получаем ID сессии проверки
             $initData = [
-                'ts'     => time(),
-                'uname' => $user->username,
-                'elem' => $element,
-                'avail' => [],
-                'stp' => [],
-                'errors' => [],
-                'skipped' => [],
-                'status' => 0,
+                'ts'      => time(),
+                'uname'   => $user->username,
+                'elem'    => $element,
+//                'avail'   => [],
+//                'stp'     => [],
+//                'errors'  => [],
+//                'skipped' => [],
+                'status'  => 0,
             ];
 
             $logSession = $this->otk->request('/elem/logs', $initData, true);
