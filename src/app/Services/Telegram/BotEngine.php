@@ -95,7 +95,12 @@
                 $this->renderKeyboard($user);
 
                 // 3. Передаем управление диспетчеру
-                $this->dispatcher->dispatch($user, $text, $this);
+                try {
+                    $this->dispatcher->dispatch($user, $text, $this);
+                } catch (\Exception $e) {
+                    Console::error($e->getMessage());
+                    $this->bot->send($user->uid, "⚠️ Ошибка: не удалось запустить фоновую задачу: ".$e->getMessage());
+                }
             }
         }
 
