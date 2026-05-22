@@ -7,7 +7,7 @@
     class AbonMacHandler extends BaseHandler {
 
         public function handle (UserLdap $user, array $params):void {
-            if (!isset($params) || !isset($params)) {
+            if (!isset($params[0]) || !isset($params[1])) {
                 $this->bot->send($user->uid, "⚠️ ОШИБКА! Коммутатор или порт не заданы.");
                 return;
             }

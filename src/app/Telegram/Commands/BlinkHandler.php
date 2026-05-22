@@ -2,6 +2,7 @@
 
     namespace App\Telegram\Commands;
 
+    use App\Jobs\ExecuteBlink;
     use App\Models\UserLdap;
 
     class BlinkHandler extends BaseHandler {
@@ -18,21 +19,7 @@
             // 2. Начало выполнения
             $this->startReply($user->uid, "🔍 Проверяю коммутатор <code>$swnm</code>...");
 
-            // 3. Проверка типа коммутатора (поддерживает ли он blink)
-            $check = $this->otk->request("/switch/$swnm/blink/check");
-
-            if (($check['error']['id'] ?? -1) === 0 && ($check['result'] ?? false)) {
-                $this->appendReply($user->uid, "💡 Всё ок! Мигаю индикаторами...");
-
-                // 4. Выполнение команды (POST-запрос)
-                $this->otk->request("/switch/$swnm/blink", [], true);
-
-                $this->appendReply($user->uid, "✅ Готово!");
-            } else {
-                // Если API вернул ошибку или неподдерживаемый тип
-                $errorMsg = $check['error']['msg'] ?? 'Неподдерживаемый тип коммутатора.';
-                $this->appendReply($user->uid, "❌ $errorMsg");
-            }
+            ExecuteBlink::dispatch($user, $swnm, $this->messageId);
 
             // 5. Логируем действие
             $this->logAction($user, 'blink', $params);

@@ -5,6 +5,7 @@
     use App\Models\UserLdap;
     use App\Services\Auth\LdapAuthService;
     use App\Services\Ldap\LdapService;
+    use Exception;
     use Illuminate\Support\Facades\Http;
 
     class BotEngine {
@@ -97,7 +98,7 @@
                 // 3. Передаем управление диспетчеру
                 try {
                     $this->dispatcher->dispatch($user, $text, $this);
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     Console::error($e->getMessage());
                     $this->bot->send($user->uid, "⚠️ Ошибка: не удалось запустить фоновую задачу: ".$e->getMessage());
                 }
