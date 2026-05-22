@@ -67,8 +67,11 @@
          * Дополнение сообщения (аналог __update)
          */
         protected function appendReply (int $uid, string $newText):void {
-            $this->accumulatedText .= $newText."\n";
-            $this->bot->update($uid, $this->messageId, $this->accumulatedText);
+            $this->accumulatedText = $newText;
+            $res = $this->bot->update($uid, $this->messageId, $this->accumulatedText);
+            if (!$res || $res === 0) {
+                $this->bot->send($uid, $this->accumulatedText);
+            }
         }
 
         protected function logAction (UserLdap $user, string $cmdName, array $params):void {
