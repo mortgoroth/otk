@@ -3,6 +3,7 @@
     namespace App\Services\Otk;
 
     use App\Services\Telegram\Console;
+    use Exception;
     use Illuminate\Support\Facades\Http;
 
     class OtkApiService {
@@ -41,6 +42,11 @@
 //                return $data['result'] ?? $data;
                 return is_string($data) ? [$data] : $data;
 
+            } catch (Exception $e) {
+                return [
+                    'result' => false,
+                    'message' => 'FATAL ERROR: '.$e->getMessage(),
+                ];
             } catch (\Illuminate\Http\Client\ConnectionException $e) {
                 // Ловим именно таймаут
                 return [

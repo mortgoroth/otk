@@ -92,8 +92,11 @@ build_composer:
         if sudo supervisorctl status otk-service-bot2 | grep -q 'RUNNING'; then
           echo 'Node is MASTER, restarting bot...';
           sudo supervisorctl restart otk-service-bot2;
+          sudo supervisorctl restart otk-service-bot-worker:*;
         else
           echo 'Node is BACKUP, skipping bot restart.';
+#          sudo supervisorctl stop otk-service-bot2;
+          sudo supervisorctl stop otk-service-bot-worker:*;
         fi
       "
 
