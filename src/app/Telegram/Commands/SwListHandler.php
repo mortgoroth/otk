@@ -56,11 +56,13 @@
                             $inline[] = [['text' => "🔌 Порты $swnm", 'callback_data' => "/ports $cleanSwnm"]];
                         }
                         // Кнопка абонентов в конце блока дома/подъезда
-                        $inline[] = [
-                            [
-                                'text' => "👥 Абоненты ($flats)", 'callback_data' => "/abons $house;$podNum $flats"
-                            ]
-                        ];
+                        if ($flats !== '-') {
+                            $inline[] = [
+                                [
+                                    'text' => "👥 Абоненты ($flats)", 'callback_data' => "/abons $house;$podNum $flats"
+                                ]
+                            ];
+                        }
                     }
 
                     $this->bot->sendInline($user->uid, $str, $inline);
