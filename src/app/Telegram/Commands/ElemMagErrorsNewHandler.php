@@ -23,14 +23,20 @@
             // 3. Запрос ошибок на A4
             $this->appendReply($user->uid, "\n🔎 <b>На магистральных портах A4:</b>");
             $errors = $this->otk->request("/zabbix/element/$elem/errors/interval/$interval");
-
+//[
+//  {
+//      "host":"A4-39055-152 (Твардовского,22\/6(1подъезд,А4дляGPON))",
+//      "port":"te1\/0\/3",
+//      "errors":"75"
+//  }
+//]
             if (isset($errors['result']) && $errors['result'] === false) {
                 $this->appendReply($user->uid, "❌ Ошибка: ".($errors['error']['msg'] ?? 'API error'));
             } elseif (empty($errors)) {
                 $this->appendReply($user->uid, "   ... не найдено");
             } else {
                 foreach ($errors as $errorData) {
-                    Console::error("ZABBIX_A4_ERROR: $errorData");
+                    Console::error("ZABBIX_A4_ERROR: ".json_encode($errorData, JSON_UNESCAPED_UNICODE));
                     $this->appendReply($user->uid, " • <code>{$errorData['host']}</code> / {$errorData['port']} : <b>{$errorData['errors']}</b>");
                 }
             }
