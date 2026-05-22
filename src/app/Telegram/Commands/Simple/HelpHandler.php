@@ -2,11 +2,12 @@
 
     namespace App\Telegram\Commands;
 
-    namespace App\Telegram\Commands;
+    namespace App\Telegram\Commands\Simple;
 
     use App\Models\Command;
     use App\Models\UserLdap;
     use App\Services\Ldap\LdapService;
+    use App\Telegram\Commands\BaseHandler;
 
     class HelpHandler extends BaseHandler {
 

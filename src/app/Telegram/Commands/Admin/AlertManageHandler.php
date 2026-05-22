@@ -1,10 +1,11 @@
 <?php
 
-    namespace App\Telegram\Commands;
+    namespace App\Telegram\Commands\Admin;
 
     use App\Models\UserLdap;
-    use App\Services\Telegram\Console;
     use App\Services\Telegram\BotEngine;
+    use App\Services\Telegram\Console;
+    use App\Telegram\Commands\BaseHandler;
     use Exception;
     use Illuminate\Container\EntryNotFoundException;
     use Illuminate\Contracts\Container\CircularDependencyException;
@@ -14,7 +15,7 @@
     class AlertManageHandler extends BaseHandler {
 
         public bool $needToStore = false;
-        
+
         /**
          * @throws CircularDependencyException
          * @throws EntryNotFoundException

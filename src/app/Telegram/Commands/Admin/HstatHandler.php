@@ -1,9 +1,10 @@
 <?php
 
-    namespace App\Telegram\Commands;
+    namespace App\Telegram\Commands\Admin;
 
-    use App\Models\UserLdap;
     use App\Http\Controllers\UserController;
+    use App\Models\UserLdap;
+    use App\Telegram\Commands\BaseHandler;
     use Illuminate\Support\Facades\DB;
 
     // Для константы сообщения об ошибке

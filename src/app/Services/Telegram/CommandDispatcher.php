@@ -4,7 +4,7 @@
 
     use App\Models\UserLdap;
     use App\Services\LDAP\LdapService;
-    use App\Telegram\Commands\{AbonMacHandler, AbonsHandler, AcsHandler, AdminManageHandler, AdminsHandler, AkbHandler, AlertManageHandler, AmpHandler, BlinkHandler, BrokenHandler, CabHandler, ClrpsHandler, CostHandler, DiagHandler, DoorHandler, ElemMagErrorsHandler, ElemMagErrorsNewHandler, HstatHandler, IdHandler, HelpHandler, HistoryHandler, ElemHandler, KtvSwDataHandler, LldpHandler, MagHandler, MalyavaHandler, ManagersHandler, MmChainHandler, MmDataHandler, MmHandler, NegotHandler, OltHandler, OntHandler, PingHandler, PonCompareHandler, PonListHandler, PortChangeHandler, PortsHandler, ProbePingHandler, QuarHandler, SaveHandler, Sh16Handler, ShortHandler, SrchShortHandler, SwConfHandler, SwConfKillHandler, SwListHandler, TdHandler, UlHandler};
+    use App\Telegram\Commands\{AbonMacHandler, AbonsHandler, AcsHandler, Admin\AdminManageHandler, Admin\AdminsHandler, Admin\AlertManageHandler, Admin\HstatHandler, Admin\MalyavaHandler, Admin\ManagersHandler, AkbHandler, AmpHandler, BlinkHandler, BrokenHandler, CabHandler, ClrpsHandler, CostHandler, DiagHandler, DoorHandler, ElemHandler, ElemMagErrorsHandler, ElemMagErrorsNewHandler, HistoryHandler, KtvSwDataHandler, LldpHandler, MagHandler, MmChainHandler, MmDataHandler, MmHandler, NegotHandler, OltHandler, OntHandler, PingHandler, PonCompareHandler, PonListHandler, PortChangeHandler, PortsHandler, ProbePingHandler, QuarHandler, SaveHandler, Sh16Handler, ShortHandler, Simple\HelpHandler, Simple\IdHandler, SrchShortHandler, SwConfHandler, SwConfKillHandler, SwListHandler, TdHandler, UlHandler};
     use Exception;
 
     class CommandDispatcher {
