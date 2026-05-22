@@ -70,7 +70,10 @@
             $this->accumulatedText = $newText;
             $res = $this->bot->update($uid, $this->messageId, $this->accumulatedText);
             if (!$res || $res === 0) {
-                $this->bot->send($uid, $this->accumulatedText);
+                $this->messageId = $this->bot->send($uid, $this->accumulatedText);
+                Console::debug("EDIT FAILED -> Sent as new message: " . $this->messageId);
+            } else {
+                Console::debug("EDIT SUCCESS for ID: " . $this->messageId);
             }
         }
 
