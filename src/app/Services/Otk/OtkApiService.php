@@ -39,7 +39,7 @@
 
                 // В старом коде результат лежал в ключе 'result'
 //                return $data['result'] ?? $data;
-                return $data;
+                return is_string($data) ? [$data] : $data;
 
             } catch (\Illuminate\Http\Client\ConnectionException $e) {
                 // Ловим именно таймаут
