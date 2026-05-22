@@ -1,10 +1,11 @@
 <?php
 
-    namespace App\Telegram\Commands;
+    namespace App\Telegram\Commands\Simple;
 
-    use App\Models\UserLdap;
     use App\Models\Log;
+    use App\Models\UserLdap;
     use App\Services\Telegram\Console;
+    use App\Telegram\Commands\BaseHandler;
 
     class HistoryHandler extends BaseHandler {
 

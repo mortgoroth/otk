@@ -1,9 +1,10 @@
 <?php
 
-    namespace App\Telegram\Commands;
+    namespace App\Telegram\Commands\Long;
 
     use App\Jobs\ExecuteBlink;
     use App\Models\UserLdap;
+    use App\Telegram\Commands\BaseHandler;
 
     class BlinkHandler extends BaseHandler {
 

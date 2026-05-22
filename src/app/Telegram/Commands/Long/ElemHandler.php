@@ -1,10 +1,11 @@
 <?php
 
-    namespace App\Telegram\Commands;
+    namespace App\Telegram\Commands\Long;
 
     use App\Jobs\ExecuteElemCheck;
     use App\Models\UserLdap;
     use App\Services\Telegram\Console;
+    use App\Telegram\Commands\BaseHandler;
 
     class ElemHandler extends BaseHandler {
 

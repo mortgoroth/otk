@@ -8,9 +8,13 @@
     use App\Services\Otk\OtkApiService;
     use App\Services\Telegram\Console;
     use App\Services\Telegram\Transport;
+    use App\Traits\Telegram\HasAlerts;
     use Exception;
 
     abstract class BaseHandler {
+
+        use HasAlerts;
+
         protected int $messageId = 0;
         protected string $accumulatedText = '';
         public bool $needToStore = true;
@@ -21,30 +25,6 @@
         ) {}
 
         abstract public function handle (UserLdap $user, array $params):void;
-
-        protected function alert(string $message, UserLdap $user): void {
-            try {
-                // Выбираем из базы всех, кому нужны уведомления
-                $recipients = UserLdap::where('alert', true)->get(['uid', 'username']);
-
-                if ($recipients->isEmpty()) {
-                    return;
-                }
-
-                foreach ($recipients as $recipient) {
-                    try {
-                        // Формируем сообщение
-                        $text = "🔔 <b>{$user->username}</b>: $message";
-
-                        $this->bot->send($recipient->uid, $text);
-                    } catch (Exception $e) {
-                        Console::error("Не удалось отправить алерт для $recipient->username (UID: $recipient->uid): " . $e->getMessage());
-                    }
-                }
-            } catch (Exception $e) {
-                Console::error("Ошибка при получении списка админов для алертов: " . $e->getMessage());
-            }
-        }
 
         protected function dispatchAsync(UserLdap $user, string $cmd, array $params, string $initialText): void {
             // Отправляем первое сообщение и получаем ID

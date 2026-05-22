@@ -1,8 +1,9 @@
 <?php
 
-    namespace App\Telegram\Commands;
+    namespace App\Telegram\Commands\Long;
 
     use App\Models\UserLdap;
+    use App\Telegram\Commands\BaseHandler;
 
     class CabHandler extends BaseHandler {
 
