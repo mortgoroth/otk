@@ -24,6 +24,7 @@
             Console::debug("PORTS REPLY: ".json_encode($res, JSON_UNESCAPED_UNICODE));
             $errorId = $res['error']['id'] ?? -1;
             if ($errorId !== 0) {
+                Console::debug("ERR <> 0: $errorId");
                 $msg = match ($errorId) {
                     1 => 'ОШИБКА! Некорректное имя',
                     2 => 'Коммутатор не найден',
@@ -32,23 +33,31 @@
                     default => 'Ошибка опроса'
                 };
                 $this->appendReply($user->uid, "❌ $msg");
+                Console::debug("ERR <> 0: $msg");
                 return;
             }
 
             // 3. Формирование отчета
             $result = $res['result'];
             $model = $result['swtype'];
+            Console::debug("FORM 1");
 
             $addr = htmlspecialchars($result['addr'] ?? 'Не указан');
+            Console::debug("ADDR: $addr");
             $reply = "✅ <b>A4-$swnm</b> ($model)\n"."📍 $addr\n"."📐 Топология: {$result['topo']}\n";
+            Console::debug("REPLY1: $reply");
 
             if ($model !== 'TRK-300') {
                 $reply .= "\n📊 <b>Распределение портов:</b>\n";
                 $reply .= $this->formatPortData($result['ports'] ?? []);
+                Console::debug("REPLY2 TRK300: $reply");
             }
 
+            Console::debug("BEFORE APPEND: $reply");
             $this->appendReply($user->uid, $reply);
+            Console::debug("AFTER REPLY: $reply");
             $this->logAction($user,'ports', $params);
+            Console::debug("AFTER LOG: $reply");
         }
 
         /**
