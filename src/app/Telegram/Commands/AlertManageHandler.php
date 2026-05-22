@@ -13,6 +13,8 @@
 
     class AlertManageHandler extends BaseHandler {
 
+        public bool $needToStore = false;
+        
         /**
          * @throws CircularDependencyException
          * @throws EntryNotFoundException

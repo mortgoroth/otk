@@ -6,8 +6,6 @@
 
     class AbonsHandler extends BaseHandler {
 
-        public bool $needToStore = true;
-
         public function handle (UserLdap $user, array $params):void {
             // 1. Парсинг адреса, подъезда и квартир (логика из цикла)
             $location = '';

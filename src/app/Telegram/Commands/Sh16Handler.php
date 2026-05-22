@@ -5,7 +5,8 @@
     use App\Models\UserLdap;
 
     class Sh16Handler extends BaseHandler {
-        public bool $needToStore = true;
+
+        public bool $needToStore = false;
 
         public function handle (UserLdap $user, array $params):void {
             // В нашем dispatch мы передадим номер калитки как параметр

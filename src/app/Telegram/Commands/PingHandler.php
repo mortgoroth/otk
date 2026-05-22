@@ -6,8 +6,6 @@
     use App\Services\Telegram\Console;
 
     class PingHandler extends BaseHandler {
-        public bool $needToStore = true;
-
 
         public function handle (UserLdap $user, array $params):void {
             // 1. Проверка параметра

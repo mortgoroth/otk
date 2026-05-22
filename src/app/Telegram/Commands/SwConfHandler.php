@@ -7,7 +7,6 @@
     use Exception;
 
     class SwConfHandler extends BaseHandler {
-        public bool $needToStore = true;
 
         public function handle (UserLdap $user, array $params):void {
             // 1. Валидация входных данных

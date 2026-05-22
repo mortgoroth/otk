@@ -6,7 +6,6 @@
     use Otk\Libs\Facades\DB\Tabs;
 
     class ProbePingHandler extends BaseHandler {
-        public bool $needToStore = true;
 
         public function handle (UserLdap $user, array $params):void {
             // 1. Валидация входных данных

@@ -3,10 +3,8 @@
     namespace App\Telegram\Commands;
 
     use App\Models\UserLdap;
-    use App\Services\Telegram\Console;
 
     class PortsHandler extends BaseHandler {
-        public bool $needToStore = true;
 
         public function handle (UserLdap $user, array $params):void {
             if (empty($params)) {

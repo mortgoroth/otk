@@ -5,6 +5,9 @@
     use App\Models\UserLdap;
 
     class AdminsHandler extends BaseHandler {
+
+        public bool $needToStore = false;
+
         public function handle (UserLdap $user, array $params):void {
             if (!$user->is_admin)
                 return;

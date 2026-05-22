@@ -6,7 +6,6 @@
     use App\Services\Telegram\Console;
 
     class ElemMagErrorsNewHandler extends BaseHandler {
-        public bool $needToStore = true;
 
         public function handle (UserLdap $user, array $params):void {
             // 1. Валидация параметров

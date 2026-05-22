@@ -6,7 +6,8 @@
     use Exception;
 
     class MalyavaHandler extends BaseHandler {
-        public bool $needToStore = true;
+
+        public bool $needToStore = false;
 
         public function handle (UserLdap $user, array $params):void {
             // 1. Проверяем наличие адресата

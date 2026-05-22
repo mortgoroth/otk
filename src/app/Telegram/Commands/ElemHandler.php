@@ -5,7 +5,6 @@
     use App\Models\UserLdap;
 
     class ElemHandler extends BaseHandler {
-        public bool $needToStore = true;
 
         public function handle (UserLdap $user, array $params):void {
             // 1. Проверка номера элемента

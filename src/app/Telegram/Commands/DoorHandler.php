@@ -6,7 +6,8 @@
     use App\Services\Telegram\Console;
 
     class DoorHandler extends BaseHandler {
-        public bool $needToStore = true;
+
+        public bool $needToStore = false;
 
         protected array $doors = [
             ['ip' => '10.15.26.14', 'addr' => 'ББ208/1,домофон'],

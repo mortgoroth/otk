@@ -13,6 +13,8 @@
 
     class AdminManageHandler extends BaseHandler {
 
+        public bool $needToStore = false;
+
         /**
          * @throws CircularDependencyException
          * @throws EntryNotFoundException

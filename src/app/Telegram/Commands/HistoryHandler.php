@@ -7,6 +7,9 @@
     use App\Services\Telegram\Console;
 
     class HistoryHandler extends BaseHandler {
+
+        public bool $needToStore = false;
+
         public function handle (UserLdap $user, array $params):void {
             $commands = Log::getLastCommands($user->uid);
 
