@@ -82,7 +82,7 @@
         /**
          * Формирование текста справки (бывший prepareHelp)
          */
-        private function prepareHelp (string $cmdName):string {
+        public function prepareHelp (string $cmdName):string {
             if ($cmdName === 'all') {
                 return "Здесь будет полный список всех доступных вам инструкций...";
             }
@@ -95,6 +95,6 @@
                 return "Инструкция для команды <b>$cmdName</b> не найдена.";
             }
 
-            return "❓ <b>Справка по команде /$cmdName</b>\n\n"."Описание: <i>{$command->description}</i>\n"."Пример: <code>/".($command->example ?? '')."</code>";
+            return "❓ <b>Справка по команде /$cmdName</b>\n\n"."Описание: <i>$command->description</i>\n"."Пример: <code>/".($command->example ?? '')."</code>";
         }
     }
