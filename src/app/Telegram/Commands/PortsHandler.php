@@ -21,10 +21,8 @@
 
             // 2. Запрос к API
             $res = $this->otk->request("/tg/$swnm/ports");
-            Console::debug("PORTS REPLY: ".json_encode($res, JSON_UNESCAPED_UNICODE));
             $errorId = $res['error']['id'] ?? -1;
             if ($errorId !== 0) {
-                Console::debug("ERR <> 0: $errorId");
                 $msg = match ($errorId) {
                     1   => 'ОШИБКА! Некорректное имя',
                     2   => 'Коммутатор не найден',
@@ -33,44 +31,34 @@
                     default => 'Ошибка опроса'
                 };
                 $this->appendReply($user->uid, "❌ $msg");
-                Console::debug("ERR <> 0: $msg");
                 return;
             }
 
             // 3. Формирование отчета
             $result = $res['result'];
             $model  = htmlspecialchars($result['swtype'] ?? 'Unknown');
-            Console::debug("FORM 1");
 
             $addr = htmlspecialchars($result['addr'] ?? 'Не указан');
             $swnm = htmlspecialchars($swnm);
             $topo = htmlspecialchars($result['topo'] ?? 'не указана');
-            Console::debug("ADDR: $addr");
             $reply = "✅ <b>A4-$swnm</b> ($model)\n"."📍 $addr\n"."📐 Топология: $topo\n";
-            Console::debug("REPLY1: $reply");
 
             if ($model !== 'TRK-300') {
                 $reply .= "\n📊 <b>Распределение портов:</b>\n";
                 $reply .= $this->formatPortData($result['ports'] ?? []);
-                Console::debug("REPLY2 TRK300: $reply");
             }
 
-            Console::debug("BEFORE APPEND: $reply");
-            Console::debug("BEFORE APPEND: $reply");
 
-            if ($this->messageId > 0) {
-                usleep(300000);
+//            if ($this->messageId > 0) {
 //                $this->appendReply($user->uid, $reply);
-                $this->startReply($user->uid, $reply);
-            } else {
-                // Если по какой-то причине ID нет, просто отправляем новым сообщением
-                $this->bot->send($user->uid, $this->accumulatedText . $reply);
-            }
+////                $this->startReply($user->uid, $reply);
+//            } else {
+//                // Если по какой-то причине ID нет, просто отправляем новым сообщением
+//                $this->bot->send($user->uid, $this->accumulatedText . $reply);
+//            }
 
-//            $this->appendReply($user->uid, $reply);
-            Console::debug("AFTER REPLY: $reply");
+            $this->appendReply($user->uid, $reply);
             $this->logAction($user,'ports', $params);
-            Console::debug("AFTER LOG: $reply");
         }
 
         /**
