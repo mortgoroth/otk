@@ -3,6 +3,7 @@
     namespace App\Telegram\Commands;
 
     use App\Models\UserLdap;
+    use App\Services\Telegram\Console;
 
     class ElemHandler extends BaseHandler {
 
@@ -32,6 +33,7 @@
             ];
 
             $logSession = $this->otk->request('/elem/logs', $initData, true);
+            Console::debug("LOGSESSION: ".json_encode($logSession, JSON_UNESCAPED_UNICODE));
             $sessionId = $logSession['id'] ?? null;
 
             if (!$sessionId) {
