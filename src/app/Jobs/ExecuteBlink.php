@@ -27,20 +27,23 @@
             // 2. Начало выполнения
             $uid = $this->user->uid;
 
+            $report = "🔍 Проверяю коммутатор <code>$this->switchName</code>...";
             // 3. Проверка типа коммутатора (поддерживает ли он blink)
             $check = $otk->request("/switch/$this->switchName/blink/check");
 
             if (($check['error']['id'] ?? -1) === 0 && ($check['result'] ?? false)) {
-                $bot->update($uid, $this->messageId, "💡 Всё ок! Мигаю индикаторами...");
+                $report .= "\n💡 Всё ок! Мигаю индикаторами...";
+                $bot->update($uid, $this->messageId, $report);
 
                 // 4. Выполнение команды (POST-запрос)
                 $otk->request("/switch/$this->switchName/blink", [], true);
 
-                $bot->update($uid, $this->messageId, "✅ Готово!");
+                $report .= "\n✅ Готово!";
+                $bot->update($uid, $this->messageId, $report);
             } else {
                 // Если API вернул ошибку или неподдерживаемый тип
                 $errorMsg = $check['error']['msg'] ?? 'Неподдерживаемый тип коммутатора.';
-                $bot->update($uid, $this->messageId, "❌ $errorMsg");
+                $bot->update($uid, $this->messageId, "report\n\n❌ $errorMsg");
             }
         }
 
