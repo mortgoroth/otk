@@ -60,6 +60,7 @@
         protected function startReply (int $uid, string $text):void {
             $this->accumulatedText = $text."\n";
             $this->messageId = $this->bot->send($uid, $this->accumulatedText);
+            Console::debug("START REPLY ID: " . $this->messageId);
         }
 
         /**

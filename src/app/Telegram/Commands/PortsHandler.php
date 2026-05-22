@@ -56,7 +56,16 @@
             }
 
             Console::debug("BEFORE APPEND: $reply");
-            $this->appendReply($user->uid, $reply);
+            Console::debug("BEFORE APPEND: $reply");
+
+            if ($this->messageId > 0) {
+                $this->appendReply($user->uid, $reply);
+            } else {
+                // Если по какой-то причине ID нет, просто отправляем новым сообщением
+                $this->bot->send($user->uid, $this->accumulatedText . $reply);
+            }
+
+//            $this->appendReply($user->uid, $reply);
             Console::debug("AFTER REPLY: $reply");
             $this->logAction($user,'ports', $params);
             Console::debug("AFTER LOG: $reply");
