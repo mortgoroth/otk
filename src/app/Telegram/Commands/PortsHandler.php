@@ -59,6 +59,7 @@
             Console::debug("BEFORE APPEND: $reply");
 
             if ($this->messageId > 0) {
+                usleep(300000);
                 $this->appendReply($user->uid, $reply);
             } else {
                 // Если по какой-то причине ID нет, просто отправляем новым сообщением
