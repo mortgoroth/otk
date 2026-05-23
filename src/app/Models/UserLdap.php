@@ -25,7 +25,7 @@
     class UserLdap extends Model {
 
         protected $connection = 'ssddb';
-        protected $table      = 'telegram.users_ldap_test';
+        protected $table      = 'users_ldap_test';
         protected $primaryKey = 'uid';
         public $incrementing = false;
         public $timestamps = false;

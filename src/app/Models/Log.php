@@ -7,7 +7,7 @@
 
     class Log extends Model {
         protected $connection = 'ssddb';
-        protected $table = 'telegram.logs';
+        protected $table = 'logs';
         public    $timestamps = false;
         protected $guarded = [];
 

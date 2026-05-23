@@ -6,7 +6,7 @@
 
     class Command extends Model {
         protected $connection = 'ssddb';
-        protected $table = 'telegram.commands';
+        protected $table = 'commands';
         public $timestamps = false;
         protected $guarded = [];
     }
