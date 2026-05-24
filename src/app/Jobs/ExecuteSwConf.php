@@ -4,6 +4,7 @@
 
     use App\Models\UserLdap;
     use App\Services\Otk\OtkApiService;
+    use App\Services\Telegram\Console;
     use App\Services\Telegram\Transport;
     use App\Traits\Telegram\HasAlerts;
     use Illuminate\Bus\Queueable;
@@ -11,6 +12,7 @@
     use Illuminate\Foundation\Bus\Dispatchable;
     use Illuminate\Queue\InteractsWithQueue;
     use Illuminate\Queue\SerializesModels;
+    use Throwable;
 
     class ExecuteSwConf implements ShouldQueue {
         use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, HasAlerts;
@@ -25,6 +27,9 @@
             protected int      $messageId,
         ) {}
 
+        /**
+         * @throws Throwable
+         */
         public function handle(OtkApiService $otk, Transport $bot): void {
             $uid = $this->user->uid;
             $token = $this->token;
@@ -37,50 +42,60 @@
             $showKillBtn = true;
             $killBtn = [[['text' => '🛑 Остановить заливку', 'callback_data' => "/killswc $token"]]];
 
-            while ($state == 1) {
-                // Опрашиваем статус
-                $status = $otk->request("/switch/config/status/$token");
+            try {
+                while ($state == 1) {
+                    // Опрашиваем статус
+                    $status = $otk->request("/switch/config/status/$token");
 
-                if (isset($status['result']) && $status['result'] === false) {
-                    $bot->update($uid, $this->messageId, $baseHeader . "❌ Ошибка API: " . ($status['error']['msg'] ?? 'unknown'));
-                    return;
-                }
-
-                $output = $status['output'] ?? '';
-                $logText = "";
-
-                // Формируем текст лога для текущего отображения
-                foreach (explode("\n", $output) as $line) {
-                    if (trim($line) !== "" && !preg_match('/(=|-{2,})/', $line)) {
-                        $logText .= trim($line) . "\n";
-                    }
-                }
-
-                if ($logText) {
-                    // Если пошла запись — убираем кнопку отмены
-                    if (mb_stristr($logText, 'Отправляю файл конфигурации')) {
-                        $showKillBtn = false;
+                    if (isset($status['result']) && $status['result'] === false) {
+                        $bot->update($uid, $this->messageId, $baseHeader . "❌ Ошибка API: " . ($status['error']['msg'] ?? 'unknown'));
+                        return;
                     }
 
-                    // Шлем последние 3500 символов, чтобы не превысить лимит Telegram
-                    $displayText = $baseHeader . "<pre>" . mb_substr($logText, -3500) . "</pre>";
-                    if (!$showKillBtn) $displayText .= "\n<i>Процесс записи... отмена невозможна.</i>";
+                    $output = $status['output'] ?? '';
+                    $logText = "";
 
-                    $bot->update($uid, $this->messageId, $displayText, $showKillBtn ? $killBtn : []);
+                    // Формируем текст лога для текущего отображения
+                    foreach (explode("\n", $output) as $line) {
+                        if (trim($line) !== "" && !preg_match('/(=|-{2,})/', $line)) {
+                            $logText .= trim($line) . "\n";
+                        }
+                    }
+
+                    if ($logText) {
+                        // Если пошла запись — убираем кнопку отмены
+                        if (mb_stristr($logText, 'Отправляю файл конфигурации')) {
+                            $showKillBtn = false;
+                        }
+
+                        // Шлем последние 3500 символов, чтобы не превысить лимит Telegram
+                        $displayText = $baseHeader . "<pre>" . mb_substr($logText, -3500) . "</pre>";
+                        if (!$showKillBtn) $displayText .= "\n<i>Процесс записи... отмена невозможна.</i>";
+
+                        $bot->update($uid, $this->messageId, $displayText, $showKillBtn ? $killBtn : []);
+                    }
+
+                    sleep(5);
+                    $state = $status['state'] ?? 0;
+                    $totalTime += 5;
+
+                    // Защита от вечного цикла (как в старом коде)
+                    if ($totalTime >= 1600) {
+                        $otk->request("/switch/config/kill/$token", [], true);
+                        $bot->update($uid, $this->messageId, $baseHeader . "⌛️ Превышено время ожидания (1600с). Процесс убит.");
+                        return;
+                    }
                 }
+            } catch (Throwable $e) {
+                // Пишем в лог причину падения
+                Console::error("JOB FATAL ERROR: " . $e->getMessage());
+                // Опционально: пишем юзеру, что всё сломалось
+                $bot->update($this->user->uid, $this->messageId, "🚨 Ошибка воркера: " . $e->getMessage());
 
-                sleep(5);
-                $state = $status['state'] ?? 0;
-                $totalTime += 5;
-
-                // Защита от вечного цикла (как в старом коде)
-                if ($totalTime >= 1600) {
-                    $otk->request("/switch/config/kill/$token", [], true);
-                    $bot->update($uid, $this->messageId, $baseHeader . "⌛️ Превышено время ожидания (1600с). Процесс убит.");
-                    return;
-                }
+                // Бросаем ошибку дальше, чтобы Laravel пометил задачу как failed,
+                // но теперь мы хотя бы знаем почему
+                throw $e;
             }
-
             // Финальная обработка состояний
             $this->processFinalState($bot, $otk, $state, $elem, $baseHeader, $status);
         }
