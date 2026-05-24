@@ -9,7 +9,6 @@
     use App\Services\Telegram\Console;
     use App\Services\Telegram\Transport;
     use App\Traits\Telegram\HasAlerts;
-    use Exception;
 
     abstract class BaseHandler {
 

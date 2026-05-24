@@ -31,46 +31,63 @@
          * @throws Throwable
          */
         public function handle(OtkApiService $otk, Transport $bot): void {
-            $uid = $this->user->uid;
+            $uid   = $this->user->uid;
             $token = $this->token;
-            $elem = explode('-', $this->switchName)[0];
+            $elem  = explode('-', $this->switchName)[0];
 
             $baseHeader = "🚀 Заливка <b>$this->switchName</b>\nToken: <code>$token</code>\n\n";
 
-            $state = 1;
-            $totalTime = 0;
+            $state       = 1;
+            $totalTime   = 0;
             $showKillBtn = true;
-            $killBtn = [[['text' => '🛑 Остановить заливку', 'callback_data' => "/killswc $token"]]];
+            $killBtn     = [[['text' => '🛑 Остановить заливку', 'callback_data' => "/killswc $token"]]];
+
+            // Переменная для хранения последнего успешного лога
+            $lastValidLog = "";
 
             try {
                 while ($state == 1) {
                     // Опрашиваем статус
                     $status = $otk->request("/switch/config/status/$token");
 
+                    // 2. Обработка ошибки API (чтобы не затирать лог)
                     if (isset($status['result']) && $status['result'] === false) {
-                        $bot->update($uid, $this->messageId, $baseHeader . "❌ Ошибка API: " . ($status['error']['msg'] ?? 'unknown'));
+                        $errorMsg = $status['error']['msg'] ?? 'не найдено / таймаут';
+
+                        $failText = $baseHeader;
+                        if ($lastValidLog) {
+                            $failText .= "<pre>" . htmlspecialchars(mb_substr($lastValidLog, -2500)) . "</pre>\n";
+                        }
+                        $failText .= "❌ <b>Ошибка API:</b> $errorMsg. Выход.";
+
+                        $bot->update($uid, $this->messageId, $failText);
                         return;
                     }
 
+                    // 3. Сбор лога из ответа
                     $output = $status['output'] ?? '';
-                    $logText = "";
+                    $iterationLog = "";
 
-                    // Формируем текст лога для текущего отображения
                     foreach (explode("\n", $output) as $line) {
                         if (trim($line) !== "" && !preg_match('/(=|-{2,})/', $line)) {
-                            $logText .= trim($line) . "\n";
+                            $iterationLog .= trim($line) . "\n";
                         }
                     }
 
-                    if ($logText) {
-                        // Если пошла запись — убираем кнопку отмены
-                        if (mb_stristr($logText, 'Отправляю файл конфигурации')) {
+                    // 4. Если лог пришел — сохраняем его и обновляем сообщение
+                    if ($iterationLog !== "") {
+                        $lastValidLog = $iterationLog;
+
+                        if (mb_stristr($lastValidLog, 'Отправляю файл конфигурации')) {
                             $showKillBtn = false;
                         }
 
-                        // Шлем последние 3500 символов, чтобы не превысить лимит Telegram
-                        $displayText = $baseHeader . "<pre>" . mb_substr($logText, -3500) . "</pre>";
-                        if (!$showKillBtn) $displayText .= "\n<i>Процесс записи... отмена невозможна.</i>";
+                        $safeLog = htmlspecialchars($lastValidLog);
+                        $displayText = $baseHeader . "<pre>" . mb_substr($safeLog, -3500) . "</pre>";
+
+                        if (!$showKillBtn) {
+                            $displayText .= "\n<i>Процесс записи... отмена невозможна.</i>";
+                        }
 
                         $bot->update($uid, $this->messageId, $displayText, $showKillBtn ? $killBtn : []);
                     }
@@ -79,44 +96,65 @@
                     $state = $status['state'] ?? 0;
                     $totalTime += 5;
 
-                    // Защита от вечного цикла (как в старом коде)
+                    // 5. Защита от вечного цикла
                     if ($totalTime >= 1600) {
                         $otk->request("/switch/config/kill/$token", [], true);
-                        $bot->update($uid, $this->messageId, $baseHeader . "⌛️ Превышено время ожидания (1600с). Процесс убит.");
+
+                        $timeoutText = $baseHeader;
+                        if ($lastValidLog) {
+                            $timeoutText .= "<pre>" . htmlspecialchars(mb_substr($lastValidLog, -2500)) . "</pre>\n";
+                        }
+                        $timeoutText .= "⌛️ Превышено время ожидания (1600с). Процесс убит.";
+
+                        $bot->update($uid, $this->messageId, $timeoutText);
                         return;
                     }
                 }
             } catch (Throwable $e) {
-                // Пишем в лог причину падения
                 Console::error("JOB FATAL ERROR: " . $e->getMessage());
-                // Опционально: пишем юзеру, что всё сломалось
-                $bot->update($this->user->uid, $this->messageId, "🚨 Ошибка воркера: " . $e->getMessage());
-
-                // Бросаем ошибку дальше, чтобы Laravel пометил задачу как failed,
-                // но теперь мы хотя бы знаем почему
+                $bot->update($this->user->uid, $this->messageId, $baseHeader . "🚨 Ошибка воркера: " . $e->getMessage());
                 throw $e;
             }
-            // Финальная обработка состояний
-            $this->processFinalState($bot, $otk, $state, $elem, $baseHeader, $status);
+
+            // 6. Финальная обработка (в нее тоже можно передать $lastValidLog для Case 2)
+            $this->processFinalState($bot, $otk, $state, $elem, $baseHeader, $status, $lastValidLog);
         }
 
-        private function processFinalState($bot, $otk, $state, $elem, $baseHeader, $status): void {
+        private function processFinalState($bot, $otk, $state, $elem, $baseHeader, $status, string $lastLog = ''): void {
             $uid = $this->user->uid;
+            $finalText = $baseHeader;
+
+            // Если есть накопленный лог, приклеиваем его (с экранированием)
+            if ($lastLog !== '') {
+                $finalText .= "<pre>" . htmlspecialchars(mb_substr($lastLog, -2500)) . "</pre>\n";
+            }
 
             if ($state == 0) {
-                // Успех: обновляем сообщение и добавляем кнопки действий
-                $bot->update($uid, $this->messageId, $baseHeader . "✅ <b>Коммутатор залит успешно!</b>", [
-                    [['text' => '🔍 Проверить элемент', 'callback_data' => "/elem $elem"]],
-                    [['text' => '📡 Пингануть', 'callback_data' => "/ping $this->switchName"]]
+                // Успех: Обновляем сообщение, добавляя лог и кнопки действий
+                $finalText .= "✅ <b>Коммутатор залит успешно!</b>";
+
+                $bot->update($uid, $this->messageId, $finalText, [
+                    [['text' => '🔍 Проверить элемент', 'callback_data' => "/elem " . current($elem)]],
+                    [['text' => '📡 Пингануть', 'callback_даta' => "/ping $this->switchName"]]
                 ]);
+
                 $this->alert("✅ успешно залил $this->switchName", $this->user);
+
             } elseif ($state == 2) {
-                $bot->update($uid, $this->messageId, $baseHeader . "❌ <b>Ошибка! Коммутатор не залит.</b> Звони оператору.");
+                // Ошибка заливки: сохраняем лог, чтобы видеть на чем упало
+                $finalText .= "❌ <b>Ошибка! Коммутатор не залит.</b> Звони оператору.";
+
+                $bot->update($uid, $this->messageId, $finalText);
                 $this->alert("❌ НЕ залил $this->switchName", $this->user);
+
             } else {
+                // Прочие ошибки (статус 3, 4 и т.д.)
                 $msg = ($status['error']['msg'] ?? 'Неизвестная ошибка');
-                $bot->update($uid, $this->messageId, $baseHeader . "❌ <b>Сбой:</b> $msg");
+                $finalText .= "❌ <b>Сбой процесса:</b> $msg";
+
+                $bot->update($uid, $this->messageId, $finalText);
                 $this->alert("❌ Сбой заливки $this->switchName: $msg", $this->user);
             }
         }
+
     }
