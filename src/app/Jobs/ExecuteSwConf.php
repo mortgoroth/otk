@@ -89,6 +89,7 @@
                             $displayText .= "\n<i>Процесс записи... отмена невозможна.</i>";
                         }
 
+                        Console::debug("DISPLAYTEXT: $displayText");
                         $bot->update($uid, $this->messageId, $displayText, $showKillBtn ? $killBtn : []);
                     }
 
