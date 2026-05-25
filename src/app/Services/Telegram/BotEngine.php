@@ -63,18 +63,19 @@
             $status = $this->auth->getStatus($uid);
 
             if (in_array(strtolower($text), ['/start', 'start', 'старт'])) {
+                $photoPath = 'vasily_bot.jpg';
                 if ($status === 'authorized') {
                     // Если уже в системе — просто здороваемся и даем рабочее меню
                     $user = UserLdap::whereUid($uid)->first();
                     $keyboard = $this->renderKeyboard($user);
 
-                    $this->bot->send($uid, "👋 Василий Иванович на связи! Чем могу помочь?", $keyboard);
+                    $this->bot->sendPhoto($uid, $photoPath, "👋 Василий Иванович на связи! Чем могу помочь?", $keyboard);
                 } else {
                     // Если гость — представляемся и просим логин
                     $welcome = "👋 Привет! Меня зовут <b>Василий Иванович</b>.\n"
                         . "Я — сервисный бот для управления сетевым оборудованием и мониторинга.\n Для работы нужно авторизоваться.";
 
-                    $this->bot->send($uid, $welcome, [['login']]);
+                    $this->bot->sendPhoto($uid, $photoPath, $welcome, [['login']]);
                 }
                 return;
             }

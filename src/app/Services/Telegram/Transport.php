@@ -125,4 +125,24 @@
             ];
         }
 
+        public function sendPhoto (int $chatId, string $path, string $caption, array $keyboard = []):int {
+            // Если это путь к файлу, а не ссылка
+            $file = fopen(public_path($path), 'r');
+
+            $params = [
+                'chat_id' => $chatId,
+                'caption' => $caption,
+                'parse_mode' => 'HTML',
+            ];
+
+            if (!empty($keyboard)) {
+                $params['reply_markup'] = json_encode($this->formatKeyboard($keyboard));
+            }
+
+            $response = Http::attach('photo', $file)
+                ->post("$this->url/sendPhoto", $params);
+
+            return $response->json('result.message_id', 0);
+        }
+
     }
