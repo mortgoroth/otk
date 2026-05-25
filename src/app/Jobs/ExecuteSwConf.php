@@ -58,7 +58,7 @@
 
                     // 2. Обработка ошибки API (чтобы не затирать лог)
                     if (isset($status['result']) && $status['result'] === false) {
-                        if (Cache::has("kill_signal_{$token}")) {
+                        if (Cache::has("kill_signal_$token")) {
                             $this->stopAndExit($bot, $token, $uid, $baseHeader, $lastValidLog);
                             return; // Мгновенный выход
                         }
