@@ -31,9 +31,23 @@
 
             // 1. ПАРСИНГ
             if (isset($update['message'])) {
-                $uid = $update['message']['chat']['id'];
-                $text = trim($update['message']['text'] ?? '');
-                $name = $update['message']['from']['username'] ?? 'User';
+                $msg  = $update['message'];
+                $uid  = $msg['chat']['id'];
+                $name = $msg['from']['username'] ?? 'User';
+
+                // Проверка на медиафайлы
+                $hasMedia = isset($msg['photo']) || isset($msg['video']) ||
+                    isset($msg['audio']) || isset($msg['voice']) ||
+                    isset($msg['document']) || isset($msg['sticker']) ||
+                    isset($msg['video_note']);
+
+                if ($hasMedia) {
+                    $this->bot->send($uid, "⚠️ Бот работает только с текстом. Картинки, видео и файлы не поддерживаются.");
+                    return;
+                }
+
+                $text = trim($msg['text'] ?? '');
+
             } elseif (isset($update['callback_query'])) {
                 $uid = $update['callback_query']['message']['chat']['id'];
                 $text = trim($update['callback_query']['data'] ?? '');
@@ -47,6 +61,23 @@
 
             // 2. ЛОГИКА АВТОРИЗАЦИИ
             $status = $this->auth->getStatus($uid);
+
+            if (in_array(strtolower($text), ['/start', 'start', 'старт'])) {
+                if ($status === 'authorized') {
+                    // Если уже в системе — просто здороваемся и даем рабочее меню
+                    $user = UserLdap::whereUid($uid)->first();
+                    $keyboard = $this->renderKeyboard($user);
+
+                    $this->bot->send($uid, "👋 Василий Иванович на связи! Чем могу помочь?", $keyboard);
+                } else {
+                    // Если гость — представляемся и просим логин
+                    $welcome = "👋 Привет! Меня зовут <b>Василий Иванович</b>.\n"
+                        . "Я — сервисный бот для управления сетевым оборудованием и мониторинга.\n Для работы нужно авторизоваться.";
+
+                    $this->bot->send($uid, $welcome, [['login']]);
+                }
+                return;
+            }
 
             // 2. Обработка нажатия кнопки LOGIN (инициация)
             if (strtolower($text) === 'login') {
@@ -82,6 +113,7 @@
             if ($status === 'authorized') {
                 // 1. Извлекаем объект пользователя, чтобы проверить его флаги alert и is_admin
                 $user = UserLdap::whereUid($uid)->first();
+                $user->update(['last_logon' => time()]);
 
                 // 2. Логика выхода
                 if (strtolower($text) === 'logout') {

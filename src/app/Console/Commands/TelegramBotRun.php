@@ -12,6 +12,7 @@
     class TelegramBotRun extends Command {
         protected $signature = 'bot:run';
         protected $description = 'Запуск Telegram бота в режиме Long Polling';
+        private const EXPIRE_TIME = 10800;
 
         public function handle (BotEngine $engine) {
             $offset = 0;
@@ -59,12 +60,12 @@
             }
         }
 
-        private function logoutExpiredUsers(BotEngine $engine): void {
-            $dayAgo = time() - 86400;
+        private function logoutExpiredUsers (BotEngine $engine):void {
+            // 3 часа = 3 * 3600 = 10800 секунд
+            $idleThreshold = time() - self::EXPIRE_TIME;
 
-            // Выбираем только тех, кто в системе и чей logon устарел
             $expiredUsers = UserLdap::where('authorized', true)
-                ->where('last_logon', '<', $dayAgo)
+                ->where('last_logon', '<', $idleThreshold)
                 ->get();
 
             if ($expiredUsers->isEmpty()) {
@@ -74,22 +75,20 @@
             foreach ($expiredUsers as $user) {
                 $user->update([
                     'authorized' => false,
-                    'attempt'    => false // Сбрасываем флаги попыток
+                    'attempt'    => false
                 ]);
 
                 try {
                     $engine->getBot()->send(
                         $user->uid,
-                        "🛑 <b>Сессия истекла</b>\nПрошло более 24 часов с момента входа. Авторизуйтесь снова.",
+                        "🛑 <b>Сессия завершена</b>\nВы не проявляли активность более 3-х часов. Авторизуйтесь снова.",
                         [['login']]
                     );
-                    $this->info("[".date('Y-m-d H:i:s')."] Авто-разлогин юзера: $user->uid");
-                } catch (Exception $e) {
+                    $this->info("[".date('Y-m-d H:i:s')."] Idle logout: {$user->uid}");
+                } catch (\Exception $e) {
                     $this->error("Ошибка уведомления {$user->uid}: " . $e->getMessage());
                 }
             }
-
-            $this->info("[".date('Y-m-d H:i:s')."] Очистка завершена. Удалено сессий: " . $expiredUsers->count());
         }
 
     }
