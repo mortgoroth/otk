@@ -22,7 +22,7 @@
                 $text = "📍 <b>Точки доступа:</b>\n";
                 foreach ($result['str'] as $type => $ap) {
                     $text .= "<b>".strtoupper($type)."</b>\n";
-                    $text .= is_array($ap) ? " • ".implode("\n • ", $ap) : " • $ap";
+                    $text .= is_array($ap) ? " • ".join("\n • ", $ap) : " • $ap";
                     $text .= "\n";
                 }
 

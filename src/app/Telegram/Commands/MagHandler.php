@@ -71,7 +71,7 @@
                     3  => 'Коммутатор недоступен',
                     4  => 'Некорректный порт',
                     91 => 'Заданный порт НЕ магистральный! Ничего не трогаю.',
-                    default => 'Ошибка API: ' . ($res['error']['msg'] ?? 'unknown'),
+                    default => 'Ошибка API: '.($res['error']['msg'] ?? 'unknown'),
                 };
                 $this->appendReply($user->uid, "❌ $errorMsg");
                 return;
@@ -130,7 +130,7 @@
          * Вспомогательный метод пинга (можно заменить на системный exec)
          */
         private function pingHost(string $host): bool {
-            exec("ping -c 1 -W 2 " . escapeshellarg($host), $output, $result);
+            exec("ping -c 1 -W 2 ".escapeshellarg($host), $output, $result);
             return $result === 0;
         }
     }

@@ -38,7 +38,7 @@
             // 4. Логируем финал
             \App\Models\Log::create([
                 'uid'            => $this->user->uid, 'command_id' => $this->commandName,
-                'command_params' => implode(' ', $this->params), 'response' => mb_substr($result, 0, 1000),
+                'command_params' => join(' ', $this->params), 'response' => mb_substr($result, 0, 1000),
                 'created_at'     => now()
             ]);
         }

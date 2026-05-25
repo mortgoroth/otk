@@ -8,7 +8,7 @@
     class SrchShortHandler extends BaseHandler {
         public function handle (UserLdap $user, array $params):void {
             // Очищаем адрес от кавычек, если они пришли из инлайна
-            $location = str_replace("'", "", implode(' ', $params));
+            $location = str_replace("'", "", join(' ', $params));
 
             if (empty($location)) {
                 $this->bot->send($user->uid, "⚠️ ОШИБКА! Адрес для поиска КЗ не задан.");

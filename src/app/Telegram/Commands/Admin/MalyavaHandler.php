@@ -32,7 +32,7 @@
             }
 
             // 4. Формируем текст сообщения (все параметры после первого)
-            $messageText = implode(' ', array_slice($params, 1));
+            $messageText = join(' ', array_slice($params, 1));
 
             // 5. Ищем Telegram UID получателя через API
             $response = $this->otk->request("/tg/users/get/{$targetLogin}");

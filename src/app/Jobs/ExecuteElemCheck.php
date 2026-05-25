@@ -47,10 +47,10 @@
                 $avail = $getAvail['result']['avail'] ?? [];
                 $unavail = $getAvail['result']['unavail'] ?? [];
 
-                $unavailText = empty($unavail) ? 'отсутствуют.' : implode("\n", $unavail);
+                $unavailText = empty($unavail) ? 'отсутствуют.' : join("\n", $unavail);
                 $report .= "<b>Недоступные коммутаторы:</b>\n$unavailText\n\n";
 
-                $bot->update($uid, $this->messageId, $report . "🔄 Запуск проверки STP...");
+                $bot->update($uid, $this->messageId, $report."🔄 Запуск проверки STP...");
 
                 // --- 2. ПРОВЕРКА STP ---
                 $this->updateStatus($otk, $sid, 3, ['unavail' => $unavail, 'avail' => $avail]);
@@ -71,7 +71,7 @@
                     // Альтернативные порты
                     $dbg_text = "";
                     if (!empty($chSTP['result']['alternates'])) {
-                        $dbg_text = "\n<b>Найденные альтернативные порты:</b>\n" . implode("\n", $chSTP['result']['alternates']);
+                        $dbg_text = "\n<b>Найденные альтернативные порты:</b>\n".join("\n", $chSTP['result']['alternates']);
                         $this->updateStatus($otk, $sid, 4, [
                             'stp' => [
                                 'alternates' => $chSTP['result']['alternates'],
@@ -83,7 +83,7 @@
                     $report .= "<b>STP:</b>\n{$chSTP['verdict']}\n$dbg_text\n\n";
                 }
 
-                $bot->update($uid, $this->messageId, $report . "⏱ Проверка магистралей (2-3 мин)...");
+                $bot->update($uid, $this->messageId, $report."⏱ Проверка магистралей (2-3 мин)...");
 
                 // --- 3. ПРОВЕРКА ОШИБОК ---
                 $this->updateStatus($otk, $sid, 5);
@@ -104,8 +104,8 @@
                         $report .= "\n";
                     }
 
-                    $report .= "<b>Ошибки:</b>\n" . implode("\n", $chErr['verdict']) . "\n\n";
-                    $report .= "<b>Ошибки на А3:</b>\n" . implode("\n", $chErr['verdict_a3'] ?? []) . "\n";
+                    $report .= "<b>Ошибки:</b>\n".join("\n", $chErr['verdict'])."\n\n";
+                    $report .= "<b>Ошибки на А3:</b>\n".join("\n", $chErr['verdict_a3'] ?? [])."\n";
 
                     // Финальное обновление основного сообщения
                     $bot->update($uid, $this->messageId, $report);
@@ -113,11 +113,11 @@
                     // Отдельный пуш о завершении (как в твоем коде)
                     $bot->send($uid, "✅ <b>Проверка элемента $element завершена</b>");
                 } else {
-                    $bot->update($uid, $this->messageId, $report . "❌ Ошибка при проверке магистралей.");
+                    $bot->update($uid, $this->messageId, $report."❌ Ошибка при проверке магистралей.");
                 }
 
             } catch (Exception $e) {
-                $bot->update($uid, $this->messageId, $report . "\n🚨 <b>Критическая ошибка Job:</b>\n" . $e->getMessage());
+                $bot->update($uid, $this->messageId, $report."\n🚨 <b>Критическая ошибка Job:</b>\n".$e->getMessage());
             }
         }
 

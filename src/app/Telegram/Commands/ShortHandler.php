@@ -6,7 +6,7 @@
 
     class ShortHandler extends BaseHandler {
         public function handle (UserLdap $user, array $params):void {
-            $location = implode(' ', $params);
+            $location = join(' ', $params);
             if (empty($location)) {
                 $this->bot->send($user->uid, "⚠️ ОШИБКА! Адрес не задан.");
                 return;

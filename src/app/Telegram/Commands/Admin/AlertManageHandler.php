@@ -76,7 +76,7 @@
                 }
 
             } catch (Exception $e) {
-                Console::error("Ошибка обновления кнопок для $targetUsername: " . $e->getMessage());
+                Console::error("Ошибка обновления кнопок для $targetUsername: ".$e->getMessage());
             }
         }
     }

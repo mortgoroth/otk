@@ -15,7 +15,7 @@
             foreach ($params as $str) {
                 $lc[] = $str;
                 if (str_contains($str, ',')) {
-                    $location = implode(' ', $lc);
+                    $location = join(' ', $lc);
                     if (str_contains($location, ';')) {
                         $d = explode(';', $location);
                         $location = $d[0];
@@ -26,7 +26,7 @@
             }
 
             $diff = array_diff($params, $lc);
-            $kv = !empty($diff) ? implode('', $diff) : false;
+            $kv = !empty($diff) ? join('', $diff) : false;
 
             if (empty($location)) {
                 $this->bot->send($user->uid, "⚠️ ОШИБКА! Адрес не задан.");

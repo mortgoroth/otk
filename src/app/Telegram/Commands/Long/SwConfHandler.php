@@ -41,7 +41,7 @@
             ], true);
 
             if (($begin['error']['id'] ?? -1) !== 0) {
-                $this->appendReply($user->uid, "❌ Ошибка запуска: " . ($begin['error']['msg'] ?? 'API error'));
+                $this->appendReply($user->uid, "❌ Ошибка запуска: ".($begin['error']['msg'] ?? 'API error'));
                 return;
             }
 

@@ -116,7 +116,7 @@
                 }
             }
 
-            return implode(',', $ranges);
+            return join(',', $ranges);
         }
     }
 

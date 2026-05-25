@@ -26,7 +26,7 @@
 
             $this->appendReply($user->uid, "🚫 <b>Недоступные коммутаторы:</b>");
             if (!empty($unavl)) {
-                $this->appendReply($user->uid, " • ".implode("\n • ", $unavl));
+                $this->appendReply($user->uid, " • ".join("\n • ", $unavl));
             } else {
                 $this->appendReply($user->uid, " — отсутствуют.");
             }
@@ -57,7 +57,7 @@
 
             // Ошибки А3
             if (!empty($elemerr['verdict_a3'])) {
-                $this->appendReply($user->uid, "\n🏢 <b>Ошибки на А3:</b>\n".implode("\n", $elemerr['verdict_a3']));
+                $this->appendReply($user->uid, "\n🏢 <b>Ошибки на А3:</b>\n".join("\n", $elemerr['verdict_a3']));
             }
 
             // Пропущенные

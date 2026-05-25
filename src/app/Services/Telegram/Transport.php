@@ -71,6 +71,7 @@
                 'text'       => $text,
                 'parse_mode' => 'HTML',
             ];
+            Console::debug("UPDATETEXT: $text");
 
             // Добавляем Inline-кнопки, если они переданы (например, из SwList)
             if (!empty($inlineKeyboard)) {

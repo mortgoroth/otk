@@ -3,6 +3,7 @@
     namespace App\Telegram\Commands;
 
     use App\Models\UserLdap;
+    use Illuminate\Support\Facades\Cache;
 
     class SwConfKillHandler extends BaseHandler {
 
@@ -19,6 +20,8 @@
 
             // 2. Начало выполнения
             $this->startReply($user->uid, "🔪 Убиваю процесс заливки коммутатора <code>$token</code>...");
+
+            Cache::put("kill_signal_$token", true, 300);
 
             // 3. Запрос к API (POST запрос)
             $res = $this->otk->request("/switch/config/kill/$token", [], true);

@@ -12,6 +12,7 @@
     use Illuminate\Foundation\Bus\Dispatchable;
     use Illuminate\Queue\InteractsWithQueue;
     use Illuminate\Queue\SerializesModels;
+    use Illuminate\Support\Facades\Cache;
     use Throwable;
 
     class ExecuteSwConf implements ShouldQueue {
@@ -48,6 +49,18 @@
 
             try {
                 while ($state == 1) {
+                    if (Cache::has("kill_signal_$token")) {
+                        $stopText = $baseHeader;
+                        if ($lastValidLog) {
+                            $stopText .= "<pre>" . htmlspecialchars(mb_substr($lastValidLog, -2500)) . "</pre>\n";
+                        }
+                        $stopText .= "\n🛑 <b>Остановка...</b>";
+
+                        $bot->update($uid, $this->messageId, $stopText, []);
+
+                        Cache::forget("kill_signal_$token"); // Подчищаем за собой
+                        return; // Мгновенный выход
+                    }
                     // Опрашиваем статус
                     $status = $otk->request("/switch/config/status/$token");
 
@@ -60,7 +73,7 @@
 
                         $failText = $baseHeader;
                         if ($lastValidLog) {
-                            $failText .= "<pre>" . htmlspecialchars(mb_substr($lastValidLog, -2500)) . "</pre>\n";
+                            $failText .= "<pre>".htmlspecialchars(mb_substr($lastValidLog, -2500))."</pre>\n";
                         }
                         $failText .= "❌ <b>Ошибка API:</b> $errorMsg. Выход.";
 
@@ -74,7 +87,7 @@
 
                     foreach (explode("\n", $output) as $line) {
                         if (trim($line) !== "" && !preg_match('/(=|-{2,})/', $line)) {
-                            $iterationLog .= trim($line) . "\n";
+                            $iterationLog .= trim($line)."\n";
                         }
                     }
 
@@ -87,7 +100,7 @@
                         }
 
                         $safeLog = htmlspecialchars($lastValidLog);
-                        $displayText = $baseHeader . "<pre>" . mb_substr($safeLog, -3500) . "</pre>";
+                        $displayText = $baseHeader."<pre>".mb_substr($safeLog, -3500)."</pre>";
 
                         if (!$showKillBtn) {
                             $displayText .= "\n<i>Конфиг отправлен... отмена невозможна.</i>";
@@ -119,7 +132,7 @@
 
                         $timeoutText = $baseHeader;
                         if ($lastValidLog) {
-                            $timeoutText .= "<pre>" . htmlspecialchars(mb_substr($lastValidLog, -2500)) . "</pre>\n";
+                            $timeoutText .= "<pre>".htmlspecialchars(mb_substr($lastValidLog, -2500))."</pre>\n";
                         }
                         $timeoutText .= "⌛️ Превышено время ожидания (1600с). Процесс убит.";
 
@@ -128,22 +141,22 @@
                     }
                 }
             } catch (Throwable $e) {
-                Console::error("JOB FATAL ERROR: " . $e->getMessage());
-                $bot->update($this->user->uid, $this->messageId, $baseHeader . "🚨 Ошибка воркера: " . $e->getMessage());
+                Console::error("JOB FATAL ERROR: ".$e->getMessage());
+                $bot->update($this->user->uid, $this->messageId, $baseHeader."🚨 Ошибка воркера: ".$e->getMessage());
                 throw $e;
             }
 
             // 6. Финальная обработка (в нее тоже можно передать $lastValidLog для Case 2)
-            $this->processFinalState($bot, $otk, $state, $elem, $baseHeader, $status, $lastValidLog);
+            $this->processFinalState($bot, $state, $elem, $baseHeader, $status, $lastValidLog);
         }
 
-        private function processFinalState($bot, $otk, $state, $elem, $baseHeader, $status, string $lastLog = ''): void {
+        private function processFinalState($bot, $state, $elem, $baseHeader, $status, string $lastLog = ''): void {
             $uid = $this->user->uid;
             $finalText = $baseHeader;
 
             // Если есть накопленный лог, приклеиваем его (с экранированием)
             if ($lastLog !== '') {
-                $finalText .= "<pre>" . htmlspecialchars(mb_substr($lastLog, -2500)) . "</pre>\n";
+                $finalText .= "<pre>".htmlspecialchars(mb_substr($lastLog, -2500)) . "</pre>\n";
             }
 
             if ($state == 0) {

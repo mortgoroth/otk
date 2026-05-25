@@ -7,7 +7,7 @@
 
     class SwListHandler extends BaseHandler {
         public function handle (UserLdap $user, array $params):void {
-            $location = implode(' ', $params);
+            $location = join(' ', $params);
 
             if (!str_contains($location, ',')) {
                 $this->bot->send($user->uid, '❌ ОШИБКА! Не задан номер дома!');

@@ -73,7 +73,7 @@
                 $this->bot->send($targetUser->uid, $userMsg, $newKeyboard);
 
             } catch (Exception $e) {
-                Console::error("Ошибка уведомления $targetUsername: " . $e->getMessage());
+                Console::error("Ошибка уведомления $targetUsername: ".$e->getMessage());
             }
         }
     }

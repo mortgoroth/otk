@@ -21,7 +21,7 @@
                 $this->startReply($user->uid, "📡 Пингую <code>$swnm</code>...");
 
                 // Предполагаем, что функция ping() доступна глобально или как хелпер
-                // В Laravel можно использовать: exec("ping -c 1 " . escapeshellarg($swnm), $output, $result);
+                // В Laravel можно использовать: exec("ping -c 1 ".escapeshellarg($swnm), $output, $result);
                 $res = ping($swnm);
 
                 $this->appendReply($user->uid, $res ? '✅ Доступен' : '❌ Недоступен');

@@ -6,7 +6,7 @@
 
     class PonListHandler extends BaseHandler {
         public function handle (UserLdap $user, array $params):void {
-            $input = implode(' ', $params);
+            $input = join(' ', $params);
             $this->startReply($user->uid, "🔍 Ищу все PON коммутаторы на <code>$input</code>...");
 
             $res = $this->otk->request('/switch/pon/list/'.urlencode($input));

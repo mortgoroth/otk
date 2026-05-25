@@ -39,7 +39,7 @@
         protected function startReply (int $uid, string $text):void {
             $this->accumulatedText = $text."\n";
             $this->messageId = $this->bot->send($uid, $this->accumulatedText, []); // Пустой массив из аргументов НЕ УДАЛЯТЬ!!!!!
-            Console::debug("START REPLY ID: " . $this->messageId);
+            Console::debug("START REPLY ID: ".$this->messageId);
         }
 
         /**
@@ -61,7 +61,7 @@
                 'created_at'     => now(),
                 'uid'            => $user->uid,
                 'command_id'     => $commandId,
-                'command_params' => implode(' ', $params),
+                'command_params' => join(' ', $params),
                 'response'       => mb_substr($this->accumulatedText, 0, 1000),
             ]);
         }
