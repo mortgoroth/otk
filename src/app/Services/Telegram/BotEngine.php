@@ -63,7 +63,7 @@
             $status = $this->auth->getStatus($uid);
 
             if (in_array(strtolower($text), ['/start', 'start', 'старт'])) {
-                $photoPath = 'vasily_bot.jpg';
+                $photoPath = 'vasiliy_bot.jpeg';
                 if ($status === 'authorized') {
                     // Если уже в системе — просто здороваемся и даем рабочее меню
                     $user = UserLdap::whereUid($uid)->first();
