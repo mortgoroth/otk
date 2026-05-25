@@ -50,15 +50,7 @@
             try {
                 while ($state == 1) {
                     if (Cache::has("kill_signal_$token")) {
-                        $stopText = $baseHeader;
-                        if ($lastValidLog) {
-                            $stopText .= "<pre>" . htmlspecialchars(mb_substr($lastValidLog, -2500)) . "</pre>\n";
-                        }
-                        $stopText .= "\n🛑 <b>Остановка...</b>";
-
-                        $bot->update($uid, $this->messageId, $stopText, []);
-
-                        Cache::forget("kill_signal_$token"); // Подчищаем за собой
+                        $this->stopAndExit($bot, $token, $uid, $baseHeader, $lastValidLog);
                         return; // Мгновенный выход
                     }
                     // Опрашиваем статус
@@ -66,6 +58,10 @@
 
                     // 2. Обработка ошибки API (чтобы не затирать лог)
                     if (isset($status['result']) && $status['result'] === false) {
+                        if (Cache::has("kill_signal_{$token}")) {
+                            $this->stopAndExit($bot, $token, $uid, $baseHeader, $lastValidLog);
+                            return; // Мгновенный выход
+                        }
                         $errorMsg = $status['error']['msg'] ?? 'не найдено / таймаут';
                         if (!mb_stristr($status['output'], $errorMsg)) {
                             return;
@@ -185,6 +181,20 @@
                 $bot->update($uid, $this->messageId, $finalText);
                 $this->alert("❌ Сбой заливки $this->switchName: $msg", $this->user);
             }
+        }
+
+        private function stopAndExit($bot, $token, int $uid, string $baseHeader, string $lastLog): void {
+            $stopText = $baseHeader;
+
+            if ($lastLog !== '') {
+                $stopText .= "<pre>" . htmlspecialchars(mb_substr($lastLog, -2500)) . "</pre>\n";
+            }
+
+            $stopText .= "\n🛑 <b>Остановка...</b>";
+            Cache::forget("kill_signal_$token"); // Подчищаем за собой
+
+            // Обновляем сообщение, удаляя кнопки (передаем [])
+            $bot->update($uid, $this->messageId, $stopText, []);
         }
 
     }
