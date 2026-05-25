@@ -25,6 +25,7 @@
             protected string   $switchName,
             protected string   $token,
             protected int      $messageId,
+            protected string   $startMessage
         ) {}
 
         /**
@@ -35,8 +36,7 @@
             $token = $this->token;
             $elem  = explode('-', $this->switchName)[0];
 
-            $baseHeader = "🚀 Заливка <b>$this->switchName</b>\nToken: <code>$token</code>\n\n";
-
+            $baseHeader  = $this->startMessage."\n🚀 Заливка <b>$this->switchName</b>\nToken: <code>$token</code>\n\n";
             $state       = 1;
             $totalTime   = 0;
             $showKillBtn = true;
@@ -44,6 +44,7 @@
 
             // Переменная для хранения последнего успешного лога
             $lastValidLog = "";
+            $lastSentFullText = "";
 
             try {
                 while ($state == 1) {
@@ -53,6 +54,9 @@
                     // 2. Обработка ошибки API (чтобы не затирать лог)
                     if (isset($status['result']) && $status['result'] === false) {
                         $errorMsg = $status['error']['msg'] ?? 'не найдено / таймаут';
+                        if (!mb_stristr($status['output'], $errorMsg)) {
+                            return;
+                        }
 
                         $failText = $baseHeader;
                         if ($lastValidLog) {
@@ -86,11 +90,23 @@
                         $displayText = $baseHeader . "<pre>" . mb_substr($safeLog, -3500) . "</pre>";
 
                         if (!$showKillBtn) {
-                            $displayText .= "\n<i>Процесс записи... отмена невозможна.</i>";
+                            $displayText .= "\n<i>Конфиг отправлен... отмена невозможна.</i>";
                         }
 
-                        Console::debug("DISPLAYTEXT: $displayText");
-                        $bot->update($uid, $this->messageId, $displayText, $showKillBtn ? $killBtn : []);
+                        // 2. ПРОВЕРКА НА ИЗМЕНЕНИЕ ТЕКСТА
+                        // Сравниваем текущий сформированный текст с тем, что отправляли в прошлый раз
+                        if ($displayText !== $lastSentFullText) {
+//                            Console::debug("DISPLAYTEXT CHANGED, SENDING UPDATE...");
+
+                            $res = $bot->update($uid, $this->messageId, $displayText, $showKillBtn ? $killBtn : []);
+
+                            // Запоминаем текст только если Telegram его принял (res != 0)
+                            if ($res !== 0) {
+                                $lastSentFullText = $displayText;
+                            }
+//                        } else {
+//                            Console::debug("DISPLAYTEXT UNCHANGED, SKIP UPDATE.");
+                        }
                     }
 
                     sleep(5);

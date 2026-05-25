@@ -55,8 +55,7 @@
             $this->appendReply($user->uid, "✅ Сессия создана. Token: <code>$token</code>");
 
             // 5. Передаем управление в очередь
-            // ВНИМАНИЕ: Передаем $this->messageId, чтобы Job редактировал ЭТО ЖЕ сообщение
-            ExecuteSwConf::dispatch($user, $swnm, $token, $this->messageId);
+            ExecuteSwConf::dispatch($user, $swnm, $token, $this->messageId, $this->accumulatedText);
 
             // 6. Логгирование и алерт
             $this->logAction($user, 'config', $params);
