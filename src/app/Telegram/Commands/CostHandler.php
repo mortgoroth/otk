@@ -42,12 +42,12 @@
                 [
                     'host' => $swnm,
                     'port' => $port,
-                    'cost' => $cost
+                    'cost' => (string) $cost,
                 ],
                 true
             );
 
-            Console::debug("COST_API_RESPONSE => $res");
+            Console::debug("COST_API_RESPONSE => ".json_encode($res, JSON_UNESCAPED_UNICODE));
 
             // 4. Обработка результата через match
             $errorId = $res['error']['id'] ?? -1;

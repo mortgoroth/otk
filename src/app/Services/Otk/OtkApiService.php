@@ -30,7 +30,8 @@
                 if ($response->failed()) {
                     Console::debug("REQUEST FAIL: $uri => {$response->body()}");
                     return [
-                        'result' => false,
+                        'params'  => $params,
+                        'result'  => false,
                         'message' => "Ошибка внешнего API: ".$response->status(),
                     ];
                 }
