@@ -61,23 +61,17 @@
         }
 
         private function logoutExpiredUsers (BotEngine $engine):void {
-            // 3 часа = 3 * 3600 = 10800 секунд
             $idleThreshold = time() - self::EXPIRE_TIME;
-
             $expiredUsers = UserLdap::where('authorized', true)
                 ->where('last_logon', '<', $idleThreshold)
                 ->get();
-
-            if ($expiredUsers->isEmpty()) {
-                return;
-            }
+            if ($expiredUsers->isEmpty()) return;
 
             foreach ($expiredUsers as $user) {
                 $user->update([
                     'authorized' => false,
                     'attempt'    => false
                 ]);
-
                 try {
                     $engine->getBot()->send(
                         $user->uid,

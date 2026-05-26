@@ -25,14 +25,6 @@
 
         abstract public function handle (UserLdap $user, array $params):void;
 
-        protected function dispatchAsync(UserLdap $user, string $cmd, array $params, string $initialText): void {
-            // Отправляем первое сообщение и получаем ID
-            $msgId = $this->bot->send($user->uid, $initialText);
-
-            // Кидаем в очередь
-            \App\Jobs\ExecuteLongCommand::dispatch($user, $cmd, $params, $msgId);
-        }
-
         /**
          * Начало выполнения: отправляет первое сообщение и запоминает ID
          */

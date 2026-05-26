@@ -3,21 +3,29 @@
     namespace App\Traits\Telegram;
 
     trait SendsLongMessages {
-        protected function splitAndSend (int $chatId, string $text, array $params, callable $sendMethod):void {
-            // Telegram лимит 4096, но с учетом разметки 3000 — безопасный порог
-            $parts = explode('<br>', wordwrap($text, 3000, '<br>'));
-            $lastIndex = count($parts) - 1;
+        protected function splitAndSend (string $text, array $params, callable $sendMethod):void {
+            if (mb_strlen($text) <= 4000) {
+                $sendMethod($params);
+                return;
+            }
 
-            foreach ($parts as $index => $part) {
-                $currentParams = $params;
-                $currentParams['text'] = $part;
+            // Разбиваем по строкам, чтобы не портить теги
+            $lines = explode("\n", $text);
+            $currentPart = "";
 
-                // Клавиатуру прикрепляем только к последней части сообщения
-                if ($index !== $lastIndex) {
-                    unset($currentParams['reply_markup']);
+            foreach ($lines as $line) {
+                if (mb_strlen($currentPart.$line."\n") > 4000) {
+                    $params['text'] = $currentPart;
+                    $sendMethod($params);
+                    $currentPart = $line."\n";
+                } else {
+                    $currentPart .= $line."\n";
                 }
+            }
 
-                $sendMethod($currentParams);
+            if (!empty($currentPart)) {
+                $params['text'] = $currentPart;
+                $sendMethod($params);
             }
         }
     }
