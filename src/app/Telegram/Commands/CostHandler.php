@@ -24,7 +24,7 @@
 
             $swnm = $params[0];
             $port = $params[1];
-            $cost = (int) $params;
+            $cost = (int) $params[2];
 
             Console::debug("COST_DEBUG => swnm: $swnm, port: $port, cost: $cost");
 
