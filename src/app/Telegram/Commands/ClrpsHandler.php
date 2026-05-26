@@ -8,8 +8,13 @@
 
         public function handle (UserLdap $user, array $params):void {
             // 1. Проверка коммутатора
-            if (empty($params)) {
+            if (empty($params[0])) {
                 $this->bot->send($user->uid, "⚠️ ОШИБКА! Коммутатор не задан.");
+                return;
+            }
+
+            if (empty($params[2])) {
+                $this->bot->send($user->uid, "⚠️ ОШИБКА! Порт не задан.");
                 return;
             }
 

@@ -24,11 +24,11 @@
             }
 
             // 2. Проверка параметров
-            if (!isset($params)) {
+            if (!isset($params[0])) {
                 $this->bot->send($user->uid, "⚠️ ОШИБКА! Коммутатор не задан.");
                 return;
             }
-            if (!isset($params)) {
+            if (!isset($params[1])) {
                 $this->bot->send($user->uid, "⚠️ ОШИБКА! Порт не задан.");
                 return;
             }
