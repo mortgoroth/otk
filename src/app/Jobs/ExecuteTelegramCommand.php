@@ -5,29 +5,34 @@
     use App\Models\UserLdap;
     use App\Services\Telegram\Console;
     use App\Services\Telegram\Transport;
+    use Illuminate\Bus\Queueable;
     use Illuminate\Contracts\Queue\ShouldQueue;
-    use Illuminate\Foundation\Queue\Queueable;
+    use Illuminate\Foundation\Bus\Dispatchable;
+    use Illuminate\Queue\InteractsWithQueue;
+    use Illuminate\Queue\SerializesModels;
     use Exception;
 
     class ExecuteTelegramCommand implements ShouldQueue {
-        use Queueable;
+        // Полный комплект трейтов Laravel для работы с очередями и моделями
+        use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-        /**
-         * Задача может выполняться долго (до 15 минут),
-         * чтобы соответствовать таймауту OtkApiService (10 минут)
-         */
         public int $timeout = 900;
 
         public function __construct (
-            protected UserLdap $user, protected string $cmdName, protected string $handlerClass, protected array $params
+            protected UserLdap $user,       // Благодаря SerializesModels превратится в ID и не потащит за собой PDO
+            protected string   $cmdName,
+            protected string   $handlerClass, // Передаем ИМЯ класса (строку), а не сам объект!
+            protected array    $params
         ) {
+            // Динамическое распределение по очередям
+            $this->queue = in_array($cmdName, ['config', 'blink']) ? 'long' : 'default';
         }
 
         /**
          * @throws Exception
          */
         public function handle ():void {
-            // Восстанавливаем request-контекст для корректного логирования в очереди
+            // Восстанавливаем request-контекст для логгера Console
             request()->merge([
                 'current_tg_uid' => $this->user->uid,
                 'command_name'   => $this->cmdName,
@@ -36,7 +41,7 @@
             Console::info("Запуск команды [$this->cmdName] из очереди для UID: {$this->user->uid}");
 
             try {
-                // Разрешаем хендлер через контейнер (внедрятся Transport и OtkApiService)
+                // Разворачиваем хендлер прямо внутри воркера через контейнер
                 $handler = app($this->handlerClass);
                 $handler->handle($this->user, $this->params);
             } catch (Exception $e) {

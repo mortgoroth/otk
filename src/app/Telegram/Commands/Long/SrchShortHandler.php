@@ -3,6 +3,7 @@
     namespace App\Telegram\Commands\Long;
 
     use App\Models\UserLdap;
+    use App\Services\Telegram\Console;
     use App\Telegram\Commands\BaseHandler;
     use Exception;
 
@@ -31,7 +32,7 @@
 
 
             try {
-                foreach ($swlst as $data) {
+                foreach ($swlst['result'] as $data) {
                     $cleanSwnm = str_replace('A4-', '', $data['swnm']);
                     $this->appendReply($user->uid, "📡 Опрашиваю <b>$cleanSwnm</b>...");
 
@@ -41,7 +42,7 @@
                     }
 
                     if (!pingSnmp($data['swip'])) {
-                        $this->appendReply($user->uid, "🔸 <b>{$data['swnm']}:</b>\n  • недоступен по SNMP");
+                        $this->appendReply($user->uid, "🔸 <b>{$data['swnm']}:</b>\n  • пингуется, но недоступен по SNMP");
                         continue;
                     }
 
