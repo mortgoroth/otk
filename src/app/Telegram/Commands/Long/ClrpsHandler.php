@@ -1,8 +1,10 @@
 <?php
 
-    namespace App\Telegram\Commands;
+    namespace App\Telegram\Commands\Long;
 
+    use App\Jobs\ExecuteClrps;
     use App\Models\UserLdap;
+    use App\Telegram\Commands\BaseHandler;
 
     class ClrpsHandler extends BaseHandler {
 
@@ -34,33 +36,7 @@
 
             // 3. Начало выполнения
             $this->startReply($user->uid, "🧹 Чистка <b>port-security</b> на <code>$swnm</code>...");
-
-            // 4. Цикл по портам
-            foreach ($range as $port) {
-                $this->appendReply($user->uid, "🔍 Чищу порт <code>$port</code>...");
-
-                // POST запрос к API
-                $res = $this->otk->request("/tg/$swnm/clrps/$port", [], true);
-
-                $errorId = $res['error']['id'] ?? -1;
-
-                $status = match ($errorId) {
-                    0 => "✅ <code>$swnm/$port</code>: Ok",
-                    3 => "⚠️ Коммутатор недоступен",
-                    50 => "❌ Ошибка. Port-security порта $port не очищен",
-                    1 => "❌ Некорректное имя коммутатора",
-                    2 => "❌ Коммутатор не найден",
-                    4 => "❌ Некорректный порт",
-                    default => "❌ Ошибка API (ID: $errorId)"
-                };
-
-                $this->appendReply($user->uid, " — $status");
-
-                // Если фатальная ошибка коммутатора — прекращаем цикл
-                if (in_array($errorId, [1, 2, 3])) {
-                    break;
-                }
-            }
+            ExecuteClrps::dispatch($user, $swnm, $range, $this->messageId, $this->accumulatedText);
 
             $this->appendReply($user->uid, "\n🏁 Обработка завершена.");
             $this->logAction($user, 'clrps', $params);

@@ -40,7 +40,6 @@
                 $report = "";
                 foreach ($quarantine['result'] as $sw => $dt) {
                     $status = (($dt['error']['id'] ?? -1) === 0) ? '✅ добавлен в карантин' : '❌ '.($dt['error']['msg'] ?? 'ошибка');
-
                     $report .= "• $sw: $status\n";
                 }
                 $this->appendReply($user->uid, $report);
