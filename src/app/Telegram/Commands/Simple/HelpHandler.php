@@ -1,7 +1,5 @@
 <?php
 
-    namespace App\Telegram\Commands;
-
     namespace App\Telegram\Commands\Simple;
 
     use App\Models\Command;

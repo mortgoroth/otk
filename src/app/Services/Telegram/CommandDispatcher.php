@@ -2,6 +2,7 @@
 
     namespace App\Services\Telegram;
 
+    use App\Jobs\ExecuteTelegramCommand;
     use App\Models\UserLdap;
     use App\Services\LDAP\LdapService;
     use App\Telegram\Commands\{AbonMacHandler, AbonsHandler, AcsHandler, Admin\AdminManageHandler, Admin\AdminsHandler, Admin\AlertManageHandler, Admin\HstatHandler, Admin\MalyavaHandler, Admin\ManagersHandler, AkbHandler, AmpHandler, BrokenHandler, CostHandler, DoorHandler, ElemMagErrorsHandler, ElemMagErrorsNewHandler, KtvSwDataHandler, LldpHandler, Long\BlinkHandler, Long\CabHandler, Long\ClrpsHandler, Long\DiagHandler, Long\ElemHandler, Long\ProbePingHandler, Long\SrchShortHandler, Long\SwConfHandler, MagHandler, MmChainHandler, MmDataHandler, MmHandler, NegotHandler, OltHandler, OntHandler, PingHandler, PonCompareHandler, PonListHandler, PortChangeHandler, PortsHandler, QuarHandler, SaveHandler, Sh16Handler, ShortHandler, Simple\HelpHandler, Simple\HistoryHandler, Simple\IdHandler, SwConfKillHandler, SwListHandler, TdHandler, UlHandler};
@@ -155,16 +156,23 @@
                 return;
             }
 
-            // 3. Запуск хендлера
+            // 3. Запуск хендлера через очередь
             $handlerClass = $this->map[$cmdName] ?? null;
 
             if ($handlerClass) {
-                $handler = app($handlerClass);
                 try {
-                    request()->merge(['command_name' => $cmdName]); // Сохраняем имя команды в глобальный запрос
-                    $handler->handle($user, $params);
-                } catch (Exception $e) {
-                    $engine->getBot()->send($user->uid, "Ошибка: ".$e->getMessage());
+                    // Отправляем выполнение команды в фоновую очередь
+                    ExecuteTelegramCommand::dispatch(
+                        $user,
+                        $cmdName,
+                        $handlerClass,
+                        $params
+                    );
+
+                    Console::debug("Команда [$cmdName] успешно отправлена в очередь для UID: {$user->uid}");
+                } catch (\Exception $e) {
+                    Console::error("Не удалось поставить команду в очередь: " . $e->getMessage());
+                    $engine->getBot()->send($user->uid, "⚠️ Ошибка: не удалось запустить фоновую задачу.");
                 }
             } else {
                 $engine->getBot()->send($user->uid, "Сам такой! Команда не найдена.");

@@ -2,7 +2,6 @@
 
     namespace App\Telegram\Commands\Long;
 
-    use App\Jobs\ExecuteProbePing;
     use App\Models\UserLdap;
     use App\Telegram\Commands\BaseHandler;
     use Otk\Libs\Facades\DB\Tabs;
@@ -42,7 +41,18 @@
                 return;
             }
 
-            ExecuteProbePing::dispatch($user, $hostData, $this->messageId, $this->accumulatedText);
+            foreach ($hostData as $datum) {
+                $ip = $datum->ip_address;
+
+                // Запрос к API для проверки пинга конкретного IP
+                $isAvail = (bool) $this->otk->request("/a2/probe/$ip/ping");
+
+                $statusIcon = $isAvail ? '🟢' : '🔴';
+                $statusText = $isAvail ? 'доступен' : 'недоступен';
+
+                $line = "$statusIcon <code>$datum->parent_host</code> / $datum->parent_port ($ip) -> $statusText";
+                $this->appendReply($user->uid, $line);
+            }
             $this->appendReply($user->uid, "\n🏁 Проверка завершена.");
             $this->logAction($user, 'probe', $params);
         }
